@@ -8,6 +8,8 @@
 var webpack = require('webpack');
 var path = require('path');
 
+var ExtractTextPlugin = require('extract-text-webpack-plugin');
+
 var ENTRY_PATH = './src/js/virtualScroll.js'
 
 var eslintLoader = {
@@ -15,6 +17,10 @@ var eslintLoader = {
     exclude: /(node_modules|bower_components)/,
     configFile: './.eslintrc',
     loader: 'eslint'
+};
+var fileLoader = {
+    test: /\.css$/,
+    loader: ExtractTextPlugin.extract('css-loader?root=src/css/')
 };
 
 module.exports = {
@@ -25,8 +31,12 @@ module.exports = {
         filename: 'component-virtual-scroll.js'
     },
     module: {
-        preLoaders: [eslintLoader]
+        preLoaders: [eslintLoader],
+        loaders: [fileLoader]
     },
+    plugins: [
+        new ExtractTextPlugin('component-virtual-scroll.css')
+    ],
     devtool: '#inline-source-map',
     devServer: {
         host: '0.0.0.0',
