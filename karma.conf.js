@@ -1,7 +1,6 @@
 'use strict';
 
 var path = require('path');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = function(config) {
     var webdriverConfig = {
@@ -35,7 +34,6 @@ module.exports = function(config) {
         // list of files / patterns to load in the browser
         files: [
             {pattern: 'lib/tui-code-snippet/code-snippet.js', watched: false},
-            {pattern: 'build/component-virtual-scroll.css', included: false},
 
             'src/js/virtualScroll.js',
             'test/index.js'
@@ -48,21 +46,11 @@ module.exports = function(config) {
         // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
         preprocessors: {
             'src/js/virtualScroll.js': ['webpack', 'sourcemap'],
-            'test/index.js': ['webpack', 'sourcemap']
+            'test/index.js': ['webpack', 'sourcemap'],
+            'public/js/**/*.js': ['coverage']
         },
 
         webpack: {
-            module: {
-                loaders: [
-                    {
-                        test: /\.css$/,
-                        loader: ExtractTextPlugin.extract('css-loader?root=src/css/')
-                    }
-                ]
-            },
-            plugins: [
-                new ExtractTextPlugin('component-virtual-scroll.css')
-            ],
             devtool: '#inline-source-map',
             resolve: {
                 root: [path.resolve('./src/js')]
@@ -73,7 +61,9 @@ module.exports = function(config) {
         // possible values: 'dots', 'progress'
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: [
-            'dots'
+            'dots',
+            'coverage',
+            'junit'
         ],
 
         // optionally, configure the reporter
