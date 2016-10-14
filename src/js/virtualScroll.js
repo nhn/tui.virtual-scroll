@@ -8,30 +8,27 @@
 
 var eventListener = require('./eventListener');
 
-var CSS_CLASS_LAYOUT = 'tui-component-virtual-scroll';
-var CSS_CLASS_ITEM_WRAPPER = CSS_CLASS_LAYOUT + '-wrapper';
-var CSS_CLASS_ITEM = CSS_CLASS_LAYOUT + '-item';
 var DEFAULT_CONTENT_HEIGHT = 50;
-var DEFAULT_DISPLAY_COUNT = 10;
 var DEFAULT_SPARE_ITEM_COUNT = 5;
+var DEFAULT_THRESHOLD = 300;
+var DEFAULT_DISPLAY_COUNT = 10;
 var PUBLIC_EVENT_MAP = {
-    scroll: 'scroll',
     scrollTop: 'scrollTop',
     scrollBottom: 'scrollBottom'
 };
+var CSS_PX_PROP_MAP = {
+    'height': true,
+    'margin-top': true
+};
 
-var VirtualScroll;
-
-require('../css/style.css');
-
-VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
+var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     /**
      * Virtual scroll component.
      * @constructs VirtualScroll
      * @param {HTMLElement|String} container - container element or id
      * @param {object} options - virtual scroll component  options
      *      @param {?Array.<String>} options.items - items
-     *      @param {?Number} options.spareItemCount - spare item count for rendering margin of wrapper area
+     *      @param {?Number} options.spareItemCount - spare item count for calculating margin of wrapper area
      *      @param {?Number} options.itemHeight - item height
      *      @param {?Number} options.displayCount - display item count
      *      @param {?Number} options.layoutHeight - layout height
@@ -40,6 +37,24 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     init: function(container, options) {
         options = options || {};
         options.scrollPosition = options.scrollPosition || 0;
+
+        /**
+         * last rendered scroll position
+         * @type {Number}
+         */
+        this.lastRenderedScrollPosition = options.scrollPosition;
+
+        /**
+         * previous scroll position
+         * @type {?Number}
+         */
+        this.prevScrollPosition = options.scrollPosition;
+
+        /**
+         * the state being a public event occurs
+         * @type {boolean}
+         */
+        this.publicEventMode = false;
 
         this._initData(options);
 
@@ -66,21 +81,19 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     _updateIndexRange: function(scrollPosition) {
         var maximumEndIndex = this.items.length;
-        var realStartIndex;
+        var actualStartIndex = parseInt(scrollPosition / this.itemHeight, 10);
 
-        realStartIndex = parseInt(scrollPosition / this.itemHeight, 0);
+        this.startIndex = Math.max(actualStartIndex - this.spareItemCount, 0);
+        this.endIndex = Math.min(actualStartIndex + this.displayCount + this.spareItemCount, maximumEndIndex);
+    },
 
-        /**
-         * start index for picking item from total items, when rendering contents
-         * @type {Number}
-         */
-        this.startIndex = Math.max(realStartIndex - this.spareItemCount, 0);
-
-        /**
-         * end index for picking item from total items, when rendering contents
-         * @type {Number}
-         */
-        this.endIndex = Math.min(realStartIndex + this.displayCount + this.spareItemCount, maximumEndIndex);
+    /**
+     * Whether plus number or not.
+     * @param {Number} value - value
+     * @returns {boolean}
+     */
+    isPlusNumber: function(value) {
+        return tui.util.isNumber(value) && (value > 0);
     },
 
     /**
@@ -90,17 +103,14 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @private
      */
     _setDisplayCount: function(displayCount, layoutHeight) {
-        var remainHeight;
+        var additionalCount;
+        var isValidDisplayCount = this.isPlusNumber(displayCount);
 
-        /**
-         * display item count.
-         * @type {Number}
-         */
-        if (!displayCount && layoutHeight) {
-            remainHeight = layoutHeight % this.itemHeight;
-            this.displayCount = parseInt(layoutHeight / this.itemHeight, 0) + (remainHeight ? 1 : 0);
-        } else {
-            this.displayCount = displayCount || DEFAULT_DISPLAY_COUNT;
+        if (!isValidDisplayCount && this.isPlusNumber(layoutHeight)) {
+            additionalCount = (layoutHeight % this.itemHeight) ? 1 : 0;
+            this.displayCount = parseInt(layoutHeight / this.itemHeight, 10) + additionalCount;
+        } else if (isValidDisplayCount) {
+            this.displayCount = displayCount;
         }
     },
 
@@ -117,6 +127,9 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     _initData: function(options) {
         var spareItemCount = options.spareItemCount;
+        var itemHeight = options.itemHeight;
+        var layoutHeight = options.layoutHeight;
+        var threshold = options.threshold;
 
         /**
          * items for rendering contents.
@@ -125,16 +138,28 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         this.items = options.items || [];
 
         /**
-         * spare item count for rendering margin of wrapper area
-         * @type {Number}
-         */
-        this.spareItemCount = tui.util.isExisty(spareItemCount) ? spareItemCount : DEFAULT_SPARE_ITEM_COUNT;
-
-        /**
          * item height for rendering item.
          * @type {Number}
          */
-        this.itemHeight = options.itemHeight || DEFAULT_CONTENT_HEIGHT;
+        this.itemHeight = this.isPlusNumber(itemHeight) ? itemHeight : DEFAULT_CONTENT_HEIGHT;
+
+        /**
+         * spare item count for rendering margin of wrapper area
+         * @type {Number}
+         */
+        this.spareItemCount = this.isPlusNumber(spareItemCount) ? spareItemCount : DEFAULT_SPARE_ITEM_COUNT;
+
+        /**
+         * size for checking to reach the terminal, when scroll event
+         * @type {number}
+         */
+        this.threshold = this.isPlusNumber(threshold) ? threshold : DEFAULT_THRESHOLD;
+
+        /**
+         * display item count.
+         * @type {Number}
+         */
+        this.displayCount = DEFAULT_DISPLAY_COUNT;
 
         this._setDisplayCount(options.displayCount, options.layoutHeight);
 
@@ -142,41 +167,27 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * layout height for rendering layout
          * @type {Number}
          */
-        this.layoutHeight = options.layoutHeight || (this.itemHeight * this.displayCount);
+        this.layoutHeight = this.isPlusNumber(layoutHeight) ? layoutHeight : (this.itemHeight * this.displayCount);
 
-        this.limitForRerender = (this.spareItemCount / 2 * this.itemHeight);
         /**
-         * previous scroll position
+         * limit scroll value for rerender
+         * @type {number}
+         */
+        this.limitScrollValueForRerender = (this.spareItemCount / 2 * this.itemHeight);
+
+        /**
+         * start index for picking item from total items, when rendering contents
          * @type {Number}
          */
-        this.prevScrollPosition = options.scrollPosition;
+        this.startIndex = 0;
+
+        /**
+         * end index for picking item from total items, when rendering contents
+         * @type {Number}
+         */
+        this.endIndex = 0;
 
         this._updateIndexRange(options.scrollPosition);
-    },
-
-    /**
-     * Render layout.
-     * @param {HTMLElement} container - container element
-     * @returns {HTMLElement}
-     * @private
-     */
-    _renderLayout: function(container) {
-        var layout;
-
-        if (!container) {
-            throw new Error('Not exist HTML container');
-        }
-
-        if (!tui.util.isHTMLTag(container)) {
-            throw new Error('This container is not HTML element');
-        }
-
-        layout = document.createElement('DIV');
-        layout.className = CSS_CLASS_LAYOUT;
-        layout.style.height = this.layoutHeight + 'px';
-        container.appendChild(layout);
-
-        return layout;
     },
 
     /**
@@ -187,7 +198,9 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     _createCssText: function(cssMap) {
         return tui.util.map(cssMap, function(value, property) {
-            return property + ':' + value + 'px';
+            var surffix = CSS_PX_PROP_MAP[property] ? 'px' : '';
+
+            return property + ':' + value + surffix;
         }).join(';');
     },
 
@@ -207,41 +220,73 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
+     * Render layout.
+     * @param {HTMLElement} container - container element
+     * @returns {HTMLElement}
+     * @private
+     */
+    _renderLayout: function(container) {
+        var cssText;
+
+        if (!container) {
+            throw new Error('Not exist HTML container');
+        }
+
+        if (!tui.util.isHTMLTag(container)) {
+            throw new Error('This container is not a HTML element');
+        }
+
+        cssText = this._createCssText({
+            'width': '100%',
+            'height': this.layoutHeight,
+            'overflow-y': 'auto',
+            '-webkit-overflow-scrolling': 'touch'
+        });
+
+        container.innerHTML = this._createDivHtml({
+            'style': cssText
+        });
+
+        return container.firstChild;
+    },
+
+    /**
      * Create items html.
      * @param {Array.<String>} items - items
      * @returns {String}
      * @private
      */
-    _createItemsHtml: function(items) {
+    _createItemsHtml: function() {
+        var items = this.items.slice(this.startIndex, this.endIndex);
         var itemCssText = this._createCssText({
-            height: this.itemHeight
+            'width': '100%',
+            'height': this.itemHeight,
+            'overflow': 'hidden'
         });
 
         return tui.util.map(items, function(item) {
             return this._createDivHtml({
-                'class': CSS_CLASS_ITEM,
-                style: itemCssText
+                'style': itemCssText
             }, item);
         }, this).join('');
     },
 
     /**
      * Create cssText for item wrapper element.
-     * @param {Number} renderingItemCount - item count for rendering
      * @param {Number} itemCount - total item count
      * @returns {String}
      * @private
      */
-    _createItemWrapperCssText: function(renderingItemCount, itemCount) {
+    _createItemWrapperCssText: function(itemCount) {
         var itemHeight = this.itemHeight;
-        var height = itemHeight * renderingItemCount;
         var marginTop = this.startIndex * itemHeight;
-        var marginBottom = (itemCount - this.endIndex) * itemHeight;
+        var height = (itemCount * itemHeight) - marginTop;
 
         return this._createCssText({
-            height: height,
+            'width': '100%',
+            'height': height,
             'margin-top': marginTop,
-            'margin-bottom': marginBottom
+            'overflow-y': 'hidden'
         });
     },
 
@@ -251,14 +296,10 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @private
      */
     _createItemWrapperHtml: function() {
-        var items = this.items.slice(this.startIndex, this.endIndex);
-        var itemsHtml = this._createItemsHtml(items);
-        var cssText = this._createItemWrapperCssText(items.length, this.items.length);
+        var itemsHtml = this._createItemsHtml();
+        var cssText = this._createItemWrapperCssText(this.items.length);
 
-        return this._createDivHtml({
-            'class': CSS_CLASS_ITEM_WRAPPER,
-            style: cssText
-        }, itemsHtml);
+        return this._createDivHtml({'style': cssText}, itemsHtml);
     },
 
     /**
@@ -267,11 +308,32 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @private
      */
     _renderContents: function(scrollPosition) {
-        this.layout.innerHTML = this._createItemWrapperHtml();
+        var layout = this.layout;
 
-        if (tui.util.isExisty(scrollPosition)) {
-            this.layout.scrollTop = scrollPosition;
+        layout.innerHTML = this._createItemWrapperHtml();
+
+        if (!tui.util.isExisty(scrollPosition)) {
+            return;
         }
+
+        setTimeout(function() {
+            layout.scrollTop = scrollPosition;
+        });
+    },
+
+    /**
+     * Fire public event.
+     * @param {String} eventName - event name
+     * @param {{scrollPosition: Number, scrollHeight: number}} eventData - event data
+     * @private
+     */
+    _firePublicEvent: function(eventName, eventData) {
+        if (this.publicEventMode) {
+            return;
+        }
+
+        this.fire(eventName, eventData);
+        this.publicEventMode = true;
     },
 
     /**
@@ -281,20 +343,26 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     _onScroll: function() {
         var scrollPosition = this.layout.scrollTop;
         var scrollHeight = this.layout.scrollHeight - this.layout.offsetHeight;
+        var eventData = {
+            scrollPosition: scrollPosition,
+            scrollHeight: scrollHeight
+        };
 
-        this.fire(PUBLIC_EVENT_MAP.scroll, scrollPosition, scrollHeight);
-
-        if (scrollPosition === scrollHeight) {
-            this.fire(PUBLIC_EVENT_MAP.scrollBottom, scrollPosition, scrollHeight);
-        } else if (scrollPosition === 0) {
-            this.fire(PUBLIC_EVENT_MAP.scrollTop, scrollPosition, scrollHeight);
-        }
-
-        if (Math.abs(this.prevScrollPosition - scrollPosition) < this.limitForRerender) {
-            return;
+        if (scrollPosition >= (scrollHeight - this.threshold)) {
+            this._firePublicEvent(PUBLIC_EVENT_MAP.scrollBottom, eventData);
+        } else if (scrollPosition <= this.threshold) {
+            this._firePublicEvent(PUBLIC_EVENT_MAP.scrollTop, eventData);
+        } else {
+            this.publicEventMode = false;
         }
 
         this.prevScrollPosition = scrollPosition;
+
+        if (Math.abs(this.lastRenderedScrollPosition - scrollPosition) < this.limitScrollValueForRerender) {
+            return;
+        }
+
+        this.lastRenderedScrollPosition = scrollPosition;
 
         this._updateIndexRange(scrollPosition);
         this._renderContents();
@@ -348,7 +416,7 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     moveScroll: function(scrollPosition) {
         if (!tui.util.isNumber(scrollPosition)) {
-            throw new Error('This scroll position value is not number type');
+            throw new Error('The scroll position value should be a number type');
         }
 
         this._updateIndexRange(scrollPosition);
@@ -380,6 +448,7 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     destroy: function() {
         eventListener.off(this.layout, 'scroll', this._onScroll, this);
         this.container.innerHTML = '';
+        this.container = null;
     }
 });
 

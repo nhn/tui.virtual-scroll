@@ -1,3 +1,5 @@
+'use strict';
+
 describe('tui.component.VirtualScroll', function() {
     var virtualScroll;
 
@@ -6,7 +8,6 @@ describe('tui.component.VirtualScroll', function() {
 
         document.body.appendChild(container);
         virtualScroll = new tui.component.VirtualScroll(container, {});
-
     });
 
     describe('_updateIndexRange()', function() {
@@ -95,7 +96,7 @@ describe('tui.component.VirtualScroll', function() {
 
             expect(function() {
                 virtualScroll._renderLayout(container);
-            }).toThrowError('This container is not HTML element');
+            }).toThrowError('This container is not a HTML element');
         });
 
         it('render layout', function() {
@@ -106,21 +107,22 @@ describe('tui.component.VirtualScroll', function() {
             actual = virtualScroll._renderLayout(container);
 
             expect(actual).toBe(container.firstChild);
-            expect(actual.className).toBe('tui-component-virtual-scroll');
+            expect(actual.style.width).toBe('100%');
             expect(actual.style.height).toBe('700px');
+            expect(actual.style['overflow-y']).toBe('auto');
         });
     });
 
     describe('_createCssText()', function() {
         it('create cssText by css map', function() {
             var cssMap = {
-                height: 500,
+                height: 600,
                 'margin-top': 100,
-                'margin-bottom': 100
+                overflow: 'hidden'
             };
             var actual = virtualScroll._createCssText(cssMap);
 
-            expect(actual).toBe('height:500px;margin-top:100px;margin-bottom:100px');
+            expect(actual).toBe('height:600px;margin-top:100px;overflow:hidden');
         });
     });
 
@@ -139,15 +141,17 @@ describe('tui.component.VirtualScroll', function() {
 
     describe('_createItemsHtml()', function() {
         it('create items html', function() {
-            var items = ['A', 'B', 'C'];
             var actual, expected;
 
+            virtualScroll.items = ['A', 'B', 'C', 'D', 'E'];
             virtualScroll.itemHeight = 50;
+            virtualScroll.startIndex = 1;
+            virtualScroll.endIndex = 4;
 
-            actual = virtualScroll._createItemsHtml(items);
-            expected = '<div class="tui-component-virtual-scroll-item" style="height:50px">A</div>' +
-                '<div class="tui-component-virtual-scroll-item" style="height:50px">B</div>' +
-                '<div class="tui-component-virtual-scroll-item" style="height:50px">C</div>';
+            actual = virtualScroll._createItemsHtml();
+            expected = '<div style="width:100%;height:50px;overflow:hidden">B</div>' +
+                '<div style="width:100%;height:50px;overflow:hidden">C</div>' +
+                '<div style="width:100%;height:50px;overflow:hidden">D</div>';
 
             expect(actual).toBe(expected);
         });
@@ -155,7 +159,6 @@ describe('tui.component.VirtualScroll', function() {
 
     describe('_createItemWrapperCssText()', function() {
         it('create cssText for item wrapper element', function() {
-            var renderingItemCount = 10;
             var itemCount = 20;
             var actual;
 
@@ -163,9 +166,9 @@ describe('tui.component.VirtualScroll', function() {
             virtualScroll.startIndex = 5;
             virtualScroll.endIndex = 15;
 
-            actual = virtualScroll._createItemWrapperCssText(renderingItemCount, itemCount);
+            actual = virtualScroll._createItemWrapperCssText(itemCount);
 
-            expect(actual).toBe('height:500px;margin-top:250px;margin-bottom:250px');
+            expect(actual).toBe('width:100%;height:750px;margin-top:250px;overflow-y:hidden');
         });
     });
 
@@ -179,11 +182,10 @@ describe('tui.component.VirtualScroll', function() {
             virtualScroll.endIndex = 4;
 
             actual = virtualScroll._createItemWrapperHtml();
-            expected = '<div class="tui-component-virtual-scroll-wrapper"' +
-                ' style="height:150px;margin-top:50px;margin-bottom:50px">' +
-                    '<div class="tui-component-virtual-scroll-item" style="height:50px">B</div>' +
-                    '<div class="tui-component-virtual-scroll-item" style="height:50px">C</div>' +
-                    '<div class="tui-component-virtual-scroll-item" style="height:50px">D</div>' +
+            expected = '<div style="width:100%;height:200px;margin-top:50px;overflow-y:hidden">' +
+                    '<div style="width:100%;height:50px;overflow:hidden">B</div>' +
+                    '<div style="width:100%;height:50px;overflow:hidden">C</div>' +
+                    '<div style="width:100%;height:50px;overflow:hidden">D</div>' +
                 '</div>';
 
             expect(actual).toBe(expected);
@@ -194,11 +196,11 @@ describe('tui.component.VirtualScroll', function() {
         it('append items', function() {
             var wrapperElement;
 
-            virtualScroll.append(['A','B']);
-            virtualScroll.append(['C','D']);
+            virtualScroll.append(['A', 'B']);
+            virtualScroll.append(['C', 'D']);
 
             wrapperElement = virtualScroll.layout.firstChild;
-            expect(virtualScroll.items).toEqual(['A','B','C','D']);
+            expect(virtualScroll.items).toEqual(['A', 'B', 'C', 'D']);
             expect(wrapperElement.childNodes.length).toBe(4);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
             expect(wrapperElement.childNodes[1].innerHTML).toBe('B');
@@ -211,11 +213,11 @@ describe('tui.component.VirtualScroll', function() {
         it('prepend items', function() {
             var wrapperElement;
 
-            virtualScroll.prepend(['A','B']);
-            virtualScroll.prepend(['C','D']);
+            virtualScroll.prepend(['A', 'B']);
+            virtualScroll.prepend(['C', 'D']);
 
             wrapperElement = virtualScroll.layout.firstChild;
-            expect(virtualScroll.items).toEqual(['C','D','A','B']);
+            expect(virtualScroll.items).toEqual(['C', 'D', 'A', 'B']);
             expect(wrapperElement.childNodes.length).toBe(4);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('C');
             expect(wrapperElement.childNodes[1].innerHTML).toBe('D');
@@ -228,10 +230,10 @@ describe('tui.component.VirtualScroll', function() {
         it('clear items', function() {
             var wrapperElement;
 
-            virtualScroll.append(['A','B']);
+            virtualScroll.append(['A', 'B']);
 
             wrapperElement = virtualScroll.layout.firstChild;
-            expect(virtualScroll.items).toEqual(['A','B']);
+            expect(virtualScroll.items).toEqual(['A', 'B']);
             expect(wrapperElement.childNodes.length).toBe(2);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
             expect(wrapperElement.childNodes[1].innerHTML).toBe('B');
@@ -248,7 +250,7 @@ describe('tui.component.VirtualScroll', function() {
 
             expect(function() {
                 virtualScroll.moveScroll(scrollPosition);
-            }).toThrowError('This scroll position value is not number type');
+            }).toThrowError('The scroll position value should be a number type');
         });
-    })
+    });
 });
