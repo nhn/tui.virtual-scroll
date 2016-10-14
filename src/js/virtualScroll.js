@@ -135,6 +135,7 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * @type {Number}
          */
         this.itemHeight = options.itemHeight || DEFAULT_CONTENT_HEIGHT;
+
         this._setDisplayCount(options.displayCount, options.layoutHeight);
 
         /**
@@ -142,6 +143,13 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * @type {Number}
          */
         this.layoutHeight = options.layoutHeight || (this.itemHeight * this.displayCount);
+
+        this.limitForRerender = (this.spareItemCount / 2 * this.itemHeight);
+        /**
+         * previous scroll position
+         * @type {Number}
+         */
+        this.prevScrollPosition = options.scrollPosition;
 
         this._updateIndexRange(options.scrollPosition);
     },
@@ -261,7 +269,6 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     _renderContents: function(scrollPosition) {
         this.layout.innerHTML = this._createItemWrapperHtml();
 
-
         if (tui.util.isExisty(scrollPosition)) {
             this.layout.scrollTop = scrollPosition;
         }
@@ -275,9 +282,6 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         var scrollPosition = this.layout.scrollTop;
         var scrollHeight = this.layout.scrollHeight - this.layout.offsetHeight;
 
-        this._updateIndexRange(scrollPosition);
-        this._renderContents();
-
         this.fire(PUBLIC_EVENT_MAP.scroll, scrollPosition, scrollHeight);
 
         if (scrollPosition === scrollHeight) {
@@ -285,6 +289,15 @@ VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         } else if (scrollPosition === 0) {
             this.fire(PUBLIC_EVENT_MAP.scrollTop, scrollPosition, scrollHeight);
         }
+
+        if (Math.abs(this.prevScrollPosition - scrollPosition) < this.limitForRerender) {
+            return;
+        }
+
+        this.prevScrollPosition = scrollPosition;
+
+        this._updateIndexRange(scrollPosition);
+        this._renderContents();
     },
 
     /**
