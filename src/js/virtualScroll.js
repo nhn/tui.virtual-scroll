@@ -568,6 +568,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @param {Array.<Number> | Number} index - remove item index or index list
      * @param {boolean} isRerendering - whether rerendering or not
      * @returns {Array.<{height: Number, contents: String}> | {height: Number, contents: String}}
+     * @api
      */
     remove: function(index, isRerendering) {
         var removed;
@@ -615,6 +616,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     /**
      * Resize height.
      * @param {Number} height - layout height
+     * @api
      */
     resizeHeight: function(height) {
         var prevScrollTop;
@@ -644,6 +646,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     /**
      * Get item count.
      * @returns {Number}
+     * @api
      */
     getItemCount: function() {
         return this.items.length;
