@@ -349,6 +349,63 @@ describe('tui.component.VirtualScroll', function() {
             expect(wrapperElement.childNodes[1].innerHTML).toBe('C');
             expect(wrapperElement.childNodes[2].innerHTML).toBe('D');
         });
+
+        it('remove item, when index is string type number', function() {
+            var wrapperElement;
+
+            virtualScroll.append([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'B'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+
+            virtualScroll.removeItem('1');
+
+            wrapperElement = virtualScroll.layout.firstChild;
+
+            expect(virtualScroll.items).toEqual([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+            expect(wrapperElement.childNodes.length).toBe(3);
+            expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
+            expect(wrapperElement.childNodes[1].innerHTML).toBe('C');
+            expect(wrapperElement.childNodes[2].innerHTML).toBe('D');
+        });
+
+        it('if index is not a number, throw error message', function() {
+            expect(function() {
+                virtualScroll.removeItem('a');
+            }).toThrowError('index should be a number');
+        });
+
+        it('remove item, when isRerendering is false', function() {
+            var wrapperElement;
+
+            virtualScroll.append([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'B'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+
+            virtualScroll.removeItem(1, false);
+
+            wrapperElement = virtualScroll.layout.firstChild;
+
+            expect(virtualScroll.items).toEqual([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+            expect(wrapperElement.childNodes.length).toBe(4);
+            expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
+            expect(wrapperElement.childNodes[1].innerHTML).toBe('B');
+            expect(wrapperElement.childNodes[2].innerHTML).toBe('C');
+            expect(wrapperElement.childNodes[3].innerHTML).toBe('D');
+        });
     });
 
     describe('removeItems()', function() {
@@ -401,10 +458,36 @@ describe('tui.component.VirtualScroll', function() {
             expect(wrapperElement.childNodes[1].innerHTML).toBe('C');
             expect(wrapperElement.childNodes[2].innerHTML).toBe('D');
         });
+
+        it('remove first item, when isRerendering is false', function() {
+            var wrapperElement;
+
+            virtualScroll.append([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'B'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+
+            virtualScroll.removeFirstItem(false);
+
+            wrapperElement = virtualScroll.layout.firstChild;
+
+            expect(virtualScroll.items).toEqual([
+                {height: 100, contents: 'B'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+            expect(wrapperElement.childNodes.length).toBe(4);
+            expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
+            expect(wrapperElement.childNodes[1].innerHTML).toBe('B');
+            expect(wrapperElement.childNodes[2].innerHTML).toBe('C');
+            expect(wrapperElement.childNodes[3].innerHTML).toBe('D');
+        });
     });
 
     describe('removeLastItem()', function() {
-        it('remove item', function() {
+        it('remove last item', function() {
             var wrapperElement;
 
             virtualScroll.append([
@@ -427,6 +510,32 @@ describe('tui.component.VirtualScroll', function() {
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
             expect(wrapperElement.childNodes[1].innerHTML).toBe('B');
             expect(wrapperElement.childNodes[2].innerHTML).toBe('C');
+        });
+
+        it('remove last item, when isRerendering is false', function() {
+            var wrapperElement;
+
+            virtualScroll.append([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'B'},
+                {height: 100, contents: 'C'},
+                {height: 100, contents: 'D'}
+            ]);
+
+            virtualScroll.removeLastItem(false);
+
+            wrapperElement = virtualScroll.layout.firstChild;
+
+            expect(virtualScroll.items).toEqual([
+                {height: 100, contents: 'A'},
+                {height: 100, contents: 'B'},
+                {height: 100, contents: 'C'}
+            ]);
+            expect(wrapperElement.childNodes.length).toBe(4);
+            expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
+            expect(wrapperElement.childNodes[1].innerHTML).toBe('B');
+            expect(wrapperElement.childNodes[2].innerHTML).toBe('C');
+            expect(wrapperElement.childNodes[3].innerHTML).toBe('D');
         });
     });
 

@@ -140,6 +140,12 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * @type {number}
          */
         this.limitScrollValueForRerender = (this.spareItemCount / 2 * this.defaultItemHeight);
+
+        /**
+         * ignore height, when calculate scroll height on scroll event handler.
+         * @type {number}
+         */
+        this.ignoreHeight = 0;
     },
 
     /**
@@ -403,7 +409,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     _onScroll: function() {
         var scrollPosition = this.layout.scrollTop;
-        var scrollHeight = this.layout.scrollHeight - this.layout.offsetHeight;
+        var scrollHeight = this.layout.scrollHeight - this.layout.offsetHeight - this.ignoreHeight;
         var eventData = {
             scrollPosition: scrollPosition,
             scrollHeight: scrollHeight
@@ -441,6 +447,19 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
+     * Set ignore height.
+     * @private
+     */
+    _setIgnoreHeight: function() {
+        var ignoreHeights = tui.util.map(tui.util.filter(this.items, function(item) {
+            return item.ignore;
+        }), function(item) {
+            return item.height;
+        });
+        this.ignoreHeight = this._sum(ignoreHeights);
+    },
+
+    /**
      * Append items.
      * @param {?Array.<String>} items - items
      * @api
@@ -448,6 +467,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     append: function(items) {
         this.items = this.items.concat(items);
         this.itemHeights = tui.util.pluck(this.items, 'height');
+        this._setIgnoreHeight();
         this._renderContents();
     },
 
@@ -461,21 +481,32 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
 
         this.items = items.concat(this.items);
         this.itemHeights = tui.util.pluck(this.items, 'height');
+        this._setIgnoreHeight();
         this._renderContents(scrollPosition);
     },
 
     /**
      * Remove item.
      * @param {number} index - index
+     * @param {?boolean} isRerendering - whether rerendering or not
      * @returns {?{height: Number, contents: String}}
      * @api
      */
-    removeItem: function(index) {
+    removeItem: function(index, isRerendering) {
         var removedItem;
 
-        if (tui.util.isNumber(index)) {
-            removedItem = this.items.splice(index, 1);
-            this.itemHeights.splice(index, 1);
+        index = parseInt(index, 10);
+
+        if (isNaN(index)) {
+            throw new Error('index should be a number');
+        }
+
+        isRerendering = !tui.util.isBoolean(isRerendering) ? true : isRerendering;
+        removedItem = this.items.splice(index, 1);
+        this.itemHeights.splice(index, 1);
+
+        if (isRerendering) {
+            this._setIgnoreHeight();
             this._renderContents();
         }
 
@@ -503,6 +534,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
 
             this.items = newItems;
             this.itemHeights = tui.util.pluck(newItems, 'height');
+            this._setIgnoreHeight();
             this._renderContents();
         }
 
@@ -511,26 +543,38 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
 
     /**
      * Remove first item.
+     * @param {?boolean} isRerendering - whether rerendering or not
      * @returns {{height: Number, contents: String}}
      */
-    removeFirstItem: function() {
+    removeFirstItem: function(isRerendering) {
         var removedItem = this.items.shift();
 
+        isRerendering = !tui.util.isBoolean(isRerendering) ? true : isRerendering;
         this.itemHeights.shift();
-        this._renderContents();
+
+        if (isRerendering) {
+            this._setIgnoreHeight();
+            this._renderContents();
+        }
 
         return removedItem;
     },
 
     /**
      * Remove last item.
+     * @param {?boolean} isRerendering - whether rerendering or not
      * @returns {{height: Number, contents: String}}
      */
-    removeLastItem: function() {
+    removeLastItem: function(isRerendering) {
         var removedItem = this.items.pop();
 
+        isRerendering = !tui.util.isBoolean(isRerendering) ? true : isRerendering;
         this.itemHeights.pop();
-        this._renderContents();
+
+        if (isRerendering) {
+            this._setIgnoreHeight();
+            this._renderContents();
+        }
 
         return removedItem;
     },
@@ -542,6 +586,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     clear: function() {
         this.items = [];
         this.itemHeights = [];
+        this.ignoreHeight = 0;
         this.layout.innerHTML = '';
     },
 
@@ -565,6 +610,14 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     getItems: function() {
         return this.items.slice();
+    },
+
+    /**
+     * Get item count.
+     * @returns {Number}
+     */
+    getItemCount: function() {
+        return this.items.length;
     },
 
     /**
