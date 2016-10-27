@@ -19,6 +19,8 @@ module.exports = function(config) {
 
         plugins: [
             'karma-jasmine',
+            'karma-coverage',
+            'karma-junit-reporter',
             'karma-webpack',
             'karma-sourcemap-loader',
             'karma-chrome-launcher',
