@@ -10,6 +10,27 @@ describe('tui.component.VirtualScroll', function() {
         virtualScroll = new tui.component.VirtualScroll(container, {});
     });
 
+    describe('_makeItemPositionList()', function() {
+        it('make item position list', function() {
+            var itemHeights = [50, 100, 200];
+            var actual = virtualScroll._makeItemPositionList(itemHeights);
+
+            expect(actual.length).toBe(3);
+            expect(actual[0]).toEqual({
+                start: 0,
+                end: 50
+            });
+            expect(actual[1]).toEqual({
+                start: 50,
+                end: 150
+            });
+            expect(actual[2]).toEqual({
+                start: 150,
+                end: 350
+            });
+        });
+    });
+
     describe('_createCssText()', function() {
         it('create cssText by css map', function() {
             var cssMap = {
@@ -63,27 +84,6 @@ describe('tui.component.VirtualScroll', function() {
             expect(actual).toBe(container.firstChild);
             expect(actual.style.width).toBe('100%');
             expect(actual.style.height).toBe('700px');
-        });
-    });
-
-    describe('_makeItemPositionList()', function() {
-        it('make item position list', function() {
-            var itemHeights = [50, 100, 200];
-            var actual = virtualScroll._makeItemPositionList(itemHeights);
-
-            expect(actual.length).toBe(3);
-            expect(actual[0]).toEqual({
-                start: 0,
-                end: 50
-            });
-            expect(actual[1]).toEqual({
-                start: 50,
-                end: 150
-            });
-            expect(actual[2]).toEqual({
-                start: 150,
-                end: 350
-            });
         });
     });
 
@@ -151,15 +151,24 @@ describe('tui.component.VirtualScroll', function() {
     });
 
     describe('_createIndexRange()', function() {
+        beforeEach(function() {
+            virtualScroll.layoutHeight = 300;
+            virtualScroll.spareItemCount = 1;
+            virtualScroll.itemHeightList = [50, 100, 100, 100, 100, 100, 80];
+            virtualScroll.itemPositionList = [
+                {start: 0, end: 50},
+                {start: 50, end: 150},
+                {start: 150, end: 250},
+                {start: 250, end: 350},
+                {start: 350, end: 450},
+                {start: 450, end: 550},
+                {start: 550, end: 600}
+            ];
+        });
+
         it('create index range', function() {
             var scrollPosition = 170;
-            var actual;
-
-            virtualScroll.layoutHeight = 300;
-            virtualScroll.itemHeights = [50, 100, 100, 100, 100, 100, 80];
-            virtualScroll.spareItemCount = 1;
-
-            actual = virtualScroll._createIndexRange(scrollPosition);
+            var actual = virtualScroll._createIndexRange(scrollPosition);
 
             expect(actual.start).toBe(1);
             expect(actual.end).toBe(6);
@@ -167,13 +176,7 @@ describe('tui.component.VirtualScroll', function() {
 
         it('create index range, when scroll position is zero', function() {
             var scrollPosition = 0;
-            var actual;
-
-            virtualScroll.layoutHeight = 300;
-            virtualScroll.itemHeights = [50, 100, 100, 100, 100, 100, 80];
-            virtualScroll.spareItemCount = 1;
-
-            actual = virtualScroll._createIndexRange(scrollPosition);
+            var actual = virtualScroll._createIndexRange(scrollPosition);
 
             expect(actual.start).toBe(0);
             expect(actual.end).toBe(5);
@@ -181,13 +184,7 @@ describe('tui.component.VirtualScroll', function() {
 
         it('create index range, when has not after spare', function() {
             var scrollPosition = 600;
-            var actual;
-
-            virtualScroll.layoutHeight = 300;
-            virtualScroll.itemHeights = [50, 100, 100, 100, 100, 100, 80];
-            virtualScroll.spareItemCount = 1;
-
-            actual = virtualScroll._createIndexRange(scrollPosition);
+            var actual = virtualScroll._createIndexRange(scrollPosition);
 
             expect(actual.start).toBe(5);
             expect(actual.end).toBe(7);
@@ -231,7 +228,7 @@ describe('tui.component.VirtualScroll', function() {
             var startIndex = 3;
             var actual;
 
-            virtualScroll.itemHeights = [50, 100, 100, 100, 100, 100, 80];
+            virtualScroll.itemHeightList = [50, 100, 100, 100, 100, 100, 80];
 
             actual = virtualScroll._createItemWrapperCssText(startIndex);
 
@@ -251,7 +248,14 @@ describe('tui.component.VirtualScroll', function() {
                 {height: 100, contents: 'D'},
                 {height: 80, contents: 'E'}
             ];
-            virtualScroll.itemHeights = [50, 100, 100, 100, 80];
+            virtualScroll.itemHeightList = [50, 100, 100, 100, 80];
+            virtualScroll.itemPositionList = [
+                {start: 0, end: 50},
+                {start: 50, end: 150},
+                {start: 150, end: 250},
+                {start: 250, end: 350},
+                {start: 350, end: 430}
+            ];
             virtualScroll.spareItemCount = 1;
 
             actual = virtualScroll._createItemWrapperHtml(scrollPosition);

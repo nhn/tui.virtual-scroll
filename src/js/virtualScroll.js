@@ -75,6 +75,36 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
+     * Make item position list.
+     * @param {Number} itemHeightList - item height list
+     * @returns {Array}
+     * @private
+     */
+    _makeItemPositionList: function(itemHeightList) {
+        var startPosition = 0;
+
+        return tui.util.map(itemHeightList, function(itemHeight) {
+            var itemPosition = {
+                start: startPosition,
+                end: startPosition + itemHeight
+            };
+
+            startPosition = itemPosition.end;
+
+            return itemPosition;
+        }, this);
+    },
+
+    /**
+     * Update item data.
+     * @private
+     */
+    _updateItemData: function() {
+        this.itemHeightList = tui.util.pluck(this.items, 'height');
+        this.itemPositionList = this._makeItemPositionList(this.itemHeightList);
+    },
+
+    /**
      * Whether plus number or not.
      * @param {Number} value - value
      * @returns {boolean}
@@ -105,13 +135,18 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * @type {Array.<{height: Number, contents: String}>}
          */
         this.items = [];
-        this._insertItems(options.items || [], 0);
 
         /**
          * item height list.
          * @type {Array.<Number>}
          */
-        this.itemHeights = tui.util.pluck(this.items, 'height');
+        this.itemHeightList = [];
+
+        /**
+         * item position list.
+         * @type {Array.<Number>}
+         */
+        this.itemPositionList = [];
 
         /**
          * item height for rendering item.
@@ -142,6 +177,9 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * @type {number}
          */
         this.limitScrollValueForRerender = (this.spareItemCount / 2 * this.defaultItemHeight);
+
+        this._insertItems(options.items || [], 0);
+        this._updateItemData();
     },
 
     /**
@@ -205,27 +243,6 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
-     * Make item position list.
-     * @param {Number} itemHeights - item heights
-     * @returns {Array}
-     * @private
-     */
-    _makeItemPositionList: function(itemHeights) {
-        var startPosition = 0;
-
-        return tui.util.map(itemHeights, function(itemHeight) {
-            var itemPosition = {
-                start: startPosition,
-                end: startPosition + (itemHeight || this.defaultItemHeight)
-            };
-
-            startPosition = itemPosition.end;
-
-            return itemPosition;
-        }, this);
-    },
-
-    /**
      * Find actual start index in itemPositionList by scrollPosition.
      * @param {Array.<{start: number, end: number}>} itemPositionList - item position list
      * @param {Number} scrollPosition - scroll position
@@ -279,12 +296,11 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @private
      */
     _createIndexRange: function(scrollPosition) {
-        var itemHeights = this.itemHeights;
-        var maximumEndIndex = itemHeights.length;
+        var itemHeightList = this.itemHeightList;
+        var maximumEndIndex = itemHeightList.length;
         var spareItemCount = this.spareItemCount;
-        var itemPositionList = this._makeItemPositionList(itemHeights);
-        var actualStartIndex = this._findActualStartIndex(itemPositionList, scrollPosition);
-        var displayCount = this._calculateDisplayCount(itemHeights.slice(actualStartIndex));
+        var actualStartIndex = this._findActualStartIndex(this.itemPositionList, scrollPosition);
+        var displayCount = this._calculateDisplayCount(itemHeightList.slice(actualStartIndex));
         var startIndex = Math.max(actualStartIndex - spareItemCount, 0);
         var endIndex = Math.min(actualStartIndex + displayCount + spareItemCount, maximumEndIndex);
 
@@ -339,9 +355,9 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @private
      */
     _createItemWrapperCssText: function(startIndex) {
-        var itemHeights = this.itemHeights;
-        var marginTop = this._sum(itemHeights.slice(0, startIndex));
-        var height = this._sum(itemHeights) - marginTop;
+        var itemHeightList = this.itemHeightList;
+        var marginTop = this._sum(itemHeightList.slice(0, startIndex));
+        var height = this._sum(itemHeightList) - marginTop;
 
         return this._createCssText({
             'width': '100%',
@@ -484,7 +500,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     append: function(items) {
         this._insertItems(items, this.items.length);
-        this.itemHeights = tui.util.pluck(this.items, 'height');
+        this._updateItemData();
         this._renderContents();
     },
 
@@ -497,7 +513,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         var scrollPosition = this.layout.scrollTop + this._sum(tui.util.pluck(items, 'height'));
 
         this._insertItems(items, 0);
-        this.itemHeights = tui.util.pluck(this.items, 'height');
+        this._updateItemData();
         this._renderContents(scrollPosition);
     },
 
@@ -512,7 +528,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
 
         index = Math.max(Math.min(index, lastIndex), 0);
         this._insertItems(items, index);
-        this.itemHeights = tui.util.pluck(this.items, 'height');
+        this._updateItemData();
         this._renderContents();
     },
 
@@ -532,7 +548,6 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         }
 
         removedItem = this.items.splice(index, 1);
-        this.itemHeights.splice(index, 1);
 
         return removedItem[0];
     },
@@ -557,7 +572,6 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
             }, this);
 
             this.items = newItems;
-            this.itemHeights = tui.util.pluck(newItems, 'height');
         }
 
         return removedItems;
@@ -579,6 +593,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
             removed = this._removeItem(index);
         }
 
+        this._updateItemData();
         isRerendering = !tui.util.isBoolean(isRerendering) ? true : isRerendering;
 
         if (isRerendering && removed && (!tui.util.isArray(removed) || removed.length)) {
@@ -594,7 +609,8 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     clear: function() {
         this.items = [];
-        this.itemHeights = [];
+        this.itemHeightList = [];
+        this.itemPositionList = [];
         this.layout.innerHTML = '';
     },
 
