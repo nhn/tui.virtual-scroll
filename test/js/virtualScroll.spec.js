@@ -275,7 +275,7 @@ describe('tui.component.VirtualScroll', function() {
             var items = ['A', 'B'];
             var actual;
 
-            virtualScroll.defaultItemHeight = 100;
+            virtualScroll.itemHeight = 100;
 
             actual = virtualScroll._correctItems(items);
 
@@ -295,7 +295,7 @@ describe('tui.component.VirtualScroll', function() {
             }];
             var actual;
 
-            virtualScroll.defaultItemHeight = 100;
+            virtualScroll.itemHeight = 100;
 
             actual = virtualScroll._correctItems(items);
 
@@ -309,7 +309,7 @@ describe('tui.component.VirtualScroll', function() {
             var items = [null, undefined];
             var actual;
 
-            virtualScroll.defaultItemHeight = 100;
+            virtualScroll.itemHeight = 100;
 
             actual = virtualScroll._correctItems(items);
 
@@ -325,7 +325,7 @@ describe('tui.component.VirtualScroll', function() {
                 {height: 100, contents: 'A'},
                 {height: 100, contents: 'B'}
             ];
-            virtualScroll.defaultItemHeight = 100;
+            virtualScroll.itemHeight = 100;
             virtualScroll._insertItems(items, 0);
 
             expect(virtualScroll.items).toEqual([
@@ -343,7 +343,7 @@ describe('tui.component.VirtualScroll', function() {
                 {height: 100, contents: 'A'},
                 {height: 100, contents: 'B'}
             ];
-            virtualScroll.defaultItemHeight = 100;
+            virtualScroll.itemHeight = 100;
             virtualScroll._insertItems(items, 1);
 
             expect(virtualScroll.items).toEqual([
@@ -361,7 +361,7 @@ describe('tui.component.VirtualScroll', function() {
                 {height: 100, contents: 'A'},
                 {height: 100, contents: 'B'}
             ];
-            virtualScroll.defaultItemHeight = 100;
+            virtualScroll.itemHeight = 100;
             virtualScroll._insertItems(items, 2);
 
             expect(virtualScroll.items).toEqual([
@@ -483,23 +483,19 @@ describe('tui.component.VirtualScroll', function() {
             ]);
         });
 
-        it('remove item, when index is string type number', function() {
-            virtualScroll._removeItem('1');
-
-            expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
-            ]);
-        });
-
-        it('if index is not a number, throw error message', function() {
+        it('if index is string, throw error message', function() {
             expect(function() {
-                virtualScroll._removeItem('a');
-            }).toThrowError('index should be a number');
+                virtualScroll._removeItem('1');
+            }).toThrowError('The index should be a plus number');
         });
 
-        it('remove item, when isRerendering is false', function() {
+        it('if index is minus value, throw error message', function() {
+            expect(function() {
+                virtualScroll._removeItem(-1);
+            }).toThrowError('The index should be a plus number');
+        });
+
+        it('remove item, when shouldRerender is false', function() {
             virtualScroll._removeItem(1, false);
 
             expect(virtualScroll.items).toEqual([
