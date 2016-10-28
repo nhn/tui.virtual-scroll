@@ -111,7 +111,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @private
      */
     _isPlusNumber: function(value) {
-        return tui.util.isNumber(value) && !isNaN(value) && (value > 0);
+        return tui.util.isNumber(value) && !isNaN(value) && (value >= 0);
     },
 
     /**
