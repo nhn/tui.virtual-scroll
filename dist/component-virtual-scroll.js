@@ -4,7 +4,7 @@
  * @version 0.0.2
  * @license MIT
  * @link https://github.nhnent.com/fe/component-virtual-scroll.git
- * bundle created at "Thu Oct 27 2016 18:38:42 GMT+0900 (KST)"
+ * bundle created at "Fri Oct 28 2016 15:34:29 GMT+0900 (KST)"
  */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -165,7 +165,7 @@
 	     * @private
 	     */
 	    _isPlusNumber: function(value) {
-	        return tui.util.isNumber(value) && !isNaN(value) && (value > 0);
+	        return tui.util.isNumber(value) && !isNaN(value) && (value >= 0);
 	    },
 
 	    /**
