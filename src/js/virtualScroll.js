@@ -119,7 +119,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @param {object} options - virtual scroll component options
      *      @param {?Array.<String>} options.items - items
      *      @param {?Number} options.spareItemCount - count of spare items for display items
-     *      @param {?Number} options.itemHeight - item height
+     *      @param {?Number} options.itemHeight - default item height
      *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
      *                                           for determining need emit scrollTop, scrollBottom event
      *      @param {?Number} options.layoutHeight - layout height
