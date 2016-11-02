@@ -7,6 +7,8 @@
   "description": "NHN Ent. Toast UI virtual scroll component",
   "ignore": [
     "src",
+    "test",
+    "examples",
     "webpack.config.js",
     "karma.conf.js",
     "karma.conf.ne.js",
