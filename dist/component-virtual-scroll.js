@@ -1,10 +1,10 @@
 /*!
  * @fileoverview tui.component-virtual-scroll
  * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
- * @version 0.0.2
+ * @version 1.0.0
  * @license MIT
  * @link https://github.nhnent.com/fe/component-virtual-scroll.git
- * bundle created at "Fri Oct 28 2016 15:34:29 GMT+0900 (KST)"
+ * bundle created at "Tue Nov 01 2016 20:48:02 GMT+0900 (KST)"
  */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -87,6 +87,7 @@
 	     *                                           for determining need emit scrollTop, scrollBottom event
 	     *      @param {?Number} options.layoutHeight - layout height
 	     *      @param {?Number} options.scrollPosition - scroll position
+	     *
 	     */
 	    init: function(container, options) {
 	        options = options || {};
@@ -173,7 +174,7 @@
 	     * @param {object} options - virtual scroll component options
 	     *      @param {?Array.<String>} options.items - items
 	     *      @param {?Number} options.spareItemCount - count of spare items for display items
-	     *      @param {?Number} options.itemHeight - item height
+	     *      @param {?Number} options.itemHeight - default item height
 	     *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
 	     *                                           for determining need emit scrollTop, scrollBottom event
 	     *      @param {?Number} options.layoutHeight - layout height
@@ -483,6 +484,15 @@
 	            scrollHeight: scrollHeight
 	        };
 
+	        /**
+	         * Occurs when the scroll event.
+	         * @api
+	         * @event VirtualScroll#scroll
+	         * @property {object} eventData - event data
+	         *      @property {number} eventData.scrollPosition - current scroll position
+	         *      @property {number} eventData.scrollHeight - scroll height
+	         *      @property {number} eventData.movedPosition - moved position
+	         */
 	        this.fire(PUBLIC_EVENT_SCROLL, tui.util.extend({
 	            movedPosition: this.prevScrollPosition - scrollPosition
 	        }, eventData));
@@ -490,8 +500,24 @@
 	        this.prevScrollPosition = scrollPosition;
 
 	        if (scrollPosition >= (scrollHeight - this.threshold)) {
+	            /**
+	             * Occurs when the scroll position is arrived bottom.
+	             * @api
+	             * @event VirtualScroll#scrollBottom
+	             * @property {object} eventData - event data
+	             *      @property {number} eventData.scrollPosition - current scroll position
+	             *      @property {number} eventData.scrollHeight - scroll height
+	             */
 	            this._firePublicEvent(PUBLIC_EVENT_SCROLL_BOTTOM, eventData);
 	        } else if (scrollPosition <= this.threshold) {
+	            /**
+	             * Occurs when the scroll position is arrived top.
+	             * @api
+	             * @event VirtualScroll#scrollTop
+	             * @property {object} eventData - event data
+	             *      @property {number} eventData.scrollPosition - current scroll position
+	             *      @property {number} eventData.scrollHeight - scroll height
+	             */
 	            this._firePublicEvent(PUBLIC_EVENT_SCROLL_TOP, eventData);
 	        } else {
 	            this.publicEventMode = false;
@@ -632,7 +658,10 @@
 	    },
 
 	    /**
-	     * Remove item or items.
+	     * Remove item or items by index.
+	     *  - If index type is number, remove one item.
+	     *  - If index type is array of number, remove items.
+	     *  - If second parameter is false, not rerendering.
 	     * @param {Array.<Number> | Number} index - remove item index or index list
 	     * @param {boolean} shouldRerender - whether should rerender or not
 	     * @returns {Array.<{height: Number, contents: String}> | {height: Number, contents: String}}
@@ -669,7 +698,7 @@
 	    },
 
 	    /**
-	     * Move scroll.
+	     * Move scroll position.
 	     * @param {Number} scrollPosition - scroll position
 	     * @api
 	     */
@@ -684,7 +713,7 @@
 	    },
 
 	    /**
-	     * Resize height.
+	     * Resize layout height.
 	     * @param {Number} height - layout height
 	     * @api
 	     */
@@ -723,7 +752,7 @@
 	    },
 
 	    /**
-	     * Get scroll position value.
+	     * Get current scroll position value.
 	     * @returns {Number}
 	     * @api
 	     */

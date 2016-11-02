@@ -1,9 +1,14 @@
-# component-virtual-scroll
+# Virtual Scroll
 
-Toast UI virtual scroll component
+Virtual Scroll is a component which enables to render only visible items according to the scroll position,
+ when there are too many items to render.
+
+## Feature
 
 ## Documentation
-* **Tutorial** : https://github.com/nhnent/tui.component-virtual-scroll/wiki/tutorial/
+* **Getting started** : https://github.com/nhnent/tui.component.virtual-scroll/wiki/getting-started/
+* **API** : https://nhnent.github.io/tui.component-virtual-scroll/latest/
+* **Sample** : https://nhnent.github.io/tui.component-virtual-scroll/latest/tutorial.html
 
 ## Dependency
 * tui.code-snippet 1.2.1

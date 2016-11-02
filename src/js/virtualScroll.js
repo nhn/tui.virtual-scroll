@@ -33,6 +33,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      *                                           for determining need emit scrollTop, scrollBottom event
      *      @param {?Number} options.layoutHeight - layout height
      *      @param {?Number} options.scrollPosition - scroll position
+     *
      */
     init: function(container, options) {
         options = options || {};
@@ -119,7 +120,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @param {object} options - virtual scroll component options
      *      @param {?Array.<String>} options.items - items
      *      @param {?Number} options.spareItemCount - count of spare items for display items
-     *      @param {?Number} options.itemHeight - item height
+     *      @param {?Number} options.itemHeight - default item height
      *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
      *                                           for determining need emit scrollTop, scrollBottom event
      *      @param {?Number} options.layoutHeight - layout height
@@ -429,6 +430,15 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
             scrollHeight: scrollHeight
         };
 
+        /**
+         * Occurs when the scroll event.
+         * @api
+         * @event VirtualScroll#scroll
+         * @property {object} eventData - event data
+         *      @property {number} eventData.scrollPosition - current scroll position
+         *      @property {number} eventData.scrollHeight - scroll height
+         *      @property {number} eventData.movedPosition - moved position
+         */
         this.fire(PUBLIC_EVENT_SCROLL, tui.util.extend({
             movedPosition: this.prevScrollPosition - scrollPosition
         }, eventData));
@@ -436,8 +446,24 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         this.prevScrollPosition = scrollPosition;
 
         if (scrollPosition >= (scrollHeight - this.threshold)) {
+            /**
+             * Occurs when the scroll position is arrived bottom.
+             * @api
+             * @event VirtualScroll#scrollBottom
+             * @property {object} eventData - event data
+             *      @property {number} eventData.scrollPosition - current scroll position
+             *      @property {number} eventData.scrollHeight - scroll height
+             */
             this._firePublicEvent(PUBLIC_EVENT_SCROLL_BOTTOM, eventData);
         } else if (scrollPosition <= this.threshold) {
+            /**
+             * Occurs when the scroll position is arrived top.
+             * @api
+             * @event VirtualScroll#scrollTop
+             * @property {object} eventData - event data
+             *      @property {number} eventData.scrollPosition - current scroll position
+             *      @property {number} eventData.scrollHeight - scroll height
+             */
             this._firePublicEvent(PUBLIC_EVENT_SCROLL_TOP, eventData);
         } else {
             this.publicEventMode = false;
@@ -578,7 +604,10 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
-     * Remove item or items.
+     * Remove item or items by index.
+     *  - If index type is number, remove one item.
+     *  - If index type is array of number, remove items.
+     *  - If second parameter is false, not rerendering.
      * @param {Array.<Number> | Number} index - remove item index or index list
      * @param {boolean} shouldRerender - whether should rerender or not
      * @returns {Array.<{height: Number, contents: String}> | {height: Number, contents: String}}
@@ -615,7 +644,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
-     * Move scroll.
+     * Move scroll position.
      * @param {Number} scrollPosition - scroll position
      * @api
      */
@@ -630,7 +659,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
-     * Resize height.
+     * Resize layout height.
      * @param {Number} height - layout height
      * @api
      */
@@ -669,7 +698,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
-     * Get scroll position value.
+     * Get current scroll position value.
      * @returns {Number}
      * @api
      */
