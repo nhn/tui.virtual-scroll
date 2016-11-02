@@ -21,7 +21,7 @@ Virtual Scroll is a component which enables to render only visible items accordi
 * Bower:
    * latest : `bower install tui-component-virtual-scroll`
    * each version : `bower install "tui-component-virtual-scroll[#tag]"`
-* Download: https://github.com/nhnent/tui.component-virtual-scroll/tree/master/dist/
+* Download: https://github.com/nhnent/tui.component.virtual-scroll/tree/master/dist/
 
 ## Release History
 * https://github.com/nhnent/tui.component.virtual-scroll/releases
