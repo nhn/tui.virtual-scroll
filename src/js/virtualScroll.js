@@ -16,6 +16,8 @@ var PUBLIC_EVENT_SCROLL = 'scroll';
 var PUBLIC_EVENT_SCROLL_TOP = 'scrollTop';
 var PUBLIC_EVENT_SCROLL_BOTTOM = 'scrollBottom';
 var CSS_PX_PROP_MAP = {
+    'top': true,
+    'left': true,
     'height': true,
     'margin-top': true
 };
@@ -36,28 +38,31 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      *
      */
     init: function(container, options) {
+        var windowScrollMode = (options.layoutHeight === 'auto');
+        var scrollPosition = options.scrollPosition;
+
         options = options || {};
-        options.scrollPosition = options.scrollPosition || 0;
+        scrollPosition = tui.util.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
 
         /**
          * last rendered scroll position
          * @type {Number}
          */
-        this.lastRenderedScrollPosition = options.scrollPosition;
+        this.lastRenderedScrollPosition = scrollPosition;
 
         /**
          * previous scroll position
          * @type {?Number}
          */
-        this.prevScrollPosition = options.scrollPosition;
+        this.prevScrollPosition = scrollPosition;
 
         /**
          * the state being a public event occurs
-         * @type {boolean}
+         * @type {Boolean}
          */
         this.publicEventMode = false;
 
-        this._initData(options);
+        this._initData(options, windowScrollMode);
 
         /**
          * container element
@@ -69,10 +74,10 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * layout element
          * @type {HTMLElement}
          */
-        this.layout = this._renderLayout(this.container);
+        this.layout = this._renderLayout(this.container, windowScrollMode);
 
-        this._renderContents(options.scrollPosition);
-        this._attachEvent();
+        this._renderContents(scrollPosition, windowScrollMode);
+        this._attachEvent(windowScrollMode);
     },
 
     /**
@@ -108,11 +113,30 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     /**
      * Whether plus number or not.
      * @param {Number} value - value
-     * @returns {boolean}
+     * @returns {Boolean}
      * @private
      */
     _isPlusNumber: function(value) {
         return tui.util.isNumber(value) && !isNaN(value) && (value >= 0);
+    },
+
+    /**
+     * Get layout height.
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
+     * @param {?Number} layoutHeightOption - layout height option
+     * @returns {*}
+     * @private
+     */
+    _getLayoutHeight: function(windowScrollMode, layoutHeightOption) {
+        var layoutHeight;
+
+        if (windowScrollMode) {
+            layoutHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        } else {
+            layoutHeight = this._isPlusNumber(layoutHeightOption) ? layoutHeightOption : DEFAULT_LAYOUT_HEIGHT;
+        }
+
+        return layoutHeight;
     },
 
     /**
@@ -125,12 +149,12 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      *                                           for determining need emit scrollTop, scrollBottom event
      *      @param {?Number} options.layoutHeight - layout height
      *      @param {?Number} options.scrollPosition - scroll position
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
      * @private
      */
-    _initData: function(options) {
+    _initData: function(options, windowScrollMode) {
         var spareItemCount = options.spareItemCount;
         var itemHeight = options.itemHeight;
-        var layoutHeight = options.layoutHeight;
         var threshold = options.threshold;
 
         /**
@@ -173,7 +197,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
          * layout height for rendering layout
          * @type {Number}
          */
-        this.layoutHeight = this._isPlusNumber(layoutHeight) ? layoutHeight : DEFAULT_LAYOUT_HEIGHT;
+        this.layoutHeight = this._getLayoutHeight(windowScrollMode, options.layoutHeight);
 
         /**
          * limit scroll value for rerender
@@ -193,9 +217,9 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      */
     _createCssText: function(cssMap) {
         return tui.util.map(cssMap, function(value, property) {
-            var surffix = CSS_PX_PROP_MAP[property] ? 'px' : '';
+            var suffix = CSS_PX_PROP_MAP[property] ? 'px' : '';
 
-            return property + ':' + value + surffix;
+            return property + ':' + value + suffix;
         }).join(';');
     },
 
@@ -217,11 +241,12 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     /**
      * Render layout.
      * @param {HTMLElement} container - container element
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
      * @returns {HTMLElement}
      * @private
      */
-    _renderLayout: function(container) {
-        var cssText;
+    _renderLayout: function(container, windowScrollMode) {
+        var cssObj, cssText;
 
         if (!container) {
             throw new Error('Not exist HTML container');
@@ -231,13 +256,17 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
             throw new Error('This container is not a HTML element');
         }
 
-        cssText = this._createCssText({
+        cssObj = {
             'width': '100%',
-            'height': this.layoutHeight,
-            'overflow-y': 'auto',
             '-webkit-overflow-scrolling': 'touch'
-        });
+        };
 
+        if (!windowScrollMode) {
+            cssObj.height = this.layoutHeight;
+            cssObj['overflow-y'] = 'auto';
+        }
+
+        cssText = this._createCssText(cssObj);
         container.innerHTML = this._createDivHtml({
             'style': cssText
         });
@@ -324,11 +353,17 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         var renderItems = this.items.slice(startIndex, endIndex);
         var baseCssTextMap = {
             'width': '100%',
-            'overflow-y': 'hidden'
+            'overflow-y': 'hidden',
+            'position': 'absolute',
+            'left': 0
         };
+        var stackedTop = 0;
 
         return tui.util.map(renderItems, function(item) {
             baseCssTextMap.height = item.height || this.itemHeight;
+            baseCssTextMap.top = stackedTop;
+
+            stackedTop += baseCssTextMap.height;
 
             return this._createDivHtml({
                 'style': this._createCssText(baseCssTextMap)
@@ -366,6 +401,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
             'width': '100%',
             'height': height,
             'margin-top': marginTop,
+            'position': 'relative',
             'overflow-y': 'hidden'
         });
     },
@@ -387,12 +423,14 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     /**
      * Render contents.
      * @param {?Number} scrollPosition - scroll position
+     * @param {?Boolean} windowScrollMode - whether use window scroll or not
      * @private
      */
-    _renderContents: function(scrollPosition) {
+    _renderContents: function(scrollPosition, windowScrollMode) {
         var layout = this.layout;
+        var renderScrollPosition = scrollPosition || Math.max(this._getScrollPosition(windowScrollMode), 0);
 
-        layout.innerHTML = this._createItemWrapperHtml(scrollPosition || Math.max(this.layout.scrollTop, 0));
+        layout.innerHTML = this._createItemWrapperHtml(renderScrollPosition);
 
         if (!tui.util.isExisty(scrollPosition)) {
             return;
@@ -419,12 +457,75 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
     },
 
     /**
-     * Handler for scroll event.
+     * Get scroll position.
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
+     * @returns {Number}
      * @private
      */
-    _onScroll: function() {
-        var scrollPosition = Math.max(this.layout.scrollTop, 0);
-        var scrollHeight = this.layout.scrollHeight - this.layout.offsetHeight;
+    _getScrollPosition: function(windowScrollMode) {
+        var layout = this.layout;
+        var getScrollPosition;
+
+        if (!windowScrollMode) {
+            getScrollPosition = function() {
+                return layout.scrollTop;
+            };
+        } else if (!tui.util.isUndefined(window.scrollY)) {
+            getScrollPosition = function() {
+                return window.scrollY;
+            };
+        } else if (!tui.util.isUndefined(window.pageXOffset)) {
+            getScrollPosition = function() {
+                return window.pageYOffset;
+            };
+        } else if (document.compatMode === 'CSS1Compat') {
+            getScrollPosition = function() {
+                return document.documentElement.scrollTop;
+            };
+        } else {
+            getScrollPosition = function() {
+                return document.body.scrollTop;
+            };
+        }
+
+        this._getScrollPosition = getScrollPosition;
+
+        return getScrollPosition();
+    },
+
+    /**
+     * Get scroll height.
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
+     * @returns {Number}
+     * @private
+     */
+    _getScrollHeight: function(windowScrollMode) {
+        var layout = this.layout;
+        var getScrollHeight;
+
+        if (windowScrollMode) {
+            getScrollHeight = function() {
+                return document.documentElement.scrollHeight - document.documentElement.offsetHeight;
+            };
+        } else {
+            getScrollHeight = function() {
+                return layout.scrollHeight - layout.offsetHeight;
+            };
+        }
+
+        this._getScrollHeight = getScrollHeight;
+
+        return getScrollHeight();
+    },
+
+    /**
+     * Handler for scroll event.
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
+     * @private
+     */
+    _onScroll: function(windowScrollMode) {
+        var scrollPosition = this._getScrollPosition(windowScrollMode);
+        var scrollHeight = this._getScrollHeight(windowScrollMode);
         var eventData = {
             scrollPosition: scrollPosition,
             scrollHeight: scrollHeight
@@ -474,16 +575,22 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         }
 
         this.lastRenderedScrollPosition = scrollPosition;
-
         this._renderContents();
     },
 
     /**
      * Attach event.
+     * @param {Boolean} windowScrollMode - whether use window scroll or not
      * @private
      */
-    _attachEvent: function() {
-        eventListener.on(this.layout, 'scroll', this._onScroll, this);
+    _attachEvent: function(windowScrollMode) {
+        var onScroll = tui.util.bind(this._onScroll, this, windowScrollMode);
+
+        if (windowScrollMode) {
+            eventListener.on(window, 'scroll', onScroll);
+        } else {
+            eventListener.on(this.layout, 'scroll', onScroll);
+        }
     },
 
     /**
@@ -609,7 +716,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      *  - If index type is array of number, remove items.
      *  - If second parameter is false, not rerendering.
      * @param {Array.<Number> | Number} index - remove item index or index list
-     * @param {boolean} shouldRerender - whether should rerender or not
+     * @param {Boolean} shouldRerender - whether should rerender or not
      * @returns {Array.<{height: Number, contents: String}> | {height: Number, contents: String}}
      * @api
      */
@@ -664,7 +771,7 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
      * @api
      */
     resizeHeight: function(height) {
-        var prevScrollTop;
+        var prevScrollPosition;
 
         height = parseInt(height, 10);
 
@@ -672,11 +779,11 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
             throw new Error('The height value should be a plus number');
         }
 
-        prevScrollTop = this.layout.scrollTop;
+        prevScrollPosition = this.layout.scrollTop;
 
         this.layoutHeight = height;
         this.layout.style.height = height + 'px';
-        this._renderContents(prevScrollTop);
+        this._renderContents(prevScrollPosition);
     },
 
     /**

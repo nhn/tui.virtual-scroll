@@ -206,9 +206,10 @@ describe('tui.component.VirtualScroll', function() {
             ];
 
             actual = virtualScroll._createItemsHtml(startIndex, endIndex);
-            expected = '<div style="width:100%;overflow-y:hidden;height:100px">B</div>' +
-                '<div style="width:100%;overflow-y:hidden;height:100px">C</div>' +
-                '<div style="width:100%;overflow-y:hidden;height:100px">D</div>';
+            expected =
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:0px">B</div>' +
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:100px">C</div>' +
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:200px">D</div>';
 
             expect(actual).toBe(expected);
         });
@@ -232,7 +233,7 @@ describe('tui.component.VirtualScroll', function() {
 
             actual = virtualScroll._createItemWrapperCssText(startIndex);
 
-            expect(actual).toBe('width:100%;height:380px;margin-top:250px;overflow-y:hidden');
+            expect(actual).toBe('width:100%;height:380px;margin-top:250px;position:relative;overflow-y:hidden');
         });
     });
 
@@ -259,12 +260,12 @@ describe('tui.component.VirtualScroll', function() {
             virtualScroll.spareItemCount = 1;
 
             actual = virtualScroll._createItemWrapperHtml(scrollPosition);
-            expected = '<div style="width:100%;height:380px;margin-top:50px;overflow-y:hidden">' +
-                    '<div style="width:100%;overflow-y:hidden;height:100px">B</div>' +
-                    '<div style="width:100%;overflow-y:hidden;height:100px">C</div>' +
-                    '<div style="width:100%;overflow-y:hidden;height:100px">D</div>' +
-                    '<div style="width:100%;overflow-y:hidden;height:80px">E</div>' +
-                '</div>';
+            expected = '<div style="width:100%;height:380px;margin-top:50px;position:relative;overflow-y:hidden">' +
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:0px">B</div>' +
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:100px">C</div>' +
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:200px">D</div>' +
+                '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:80px;top:300px">E</div>' +
+            '</div>';
 
             expect(actual).toBe(expected);
         });
