@@ -503,13 +503,21 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
         var layout = this.layout;
         var getScrollHeight;
 
-        if (windowScrollMode) {
+        if (!windowScrollMode) {
             getScrollHeight = function() {
-                return document.documentElement.scrollHeight - document.documentElement.offsetHeight;
+                return layout.scrollHeight - layout.offsetHeight;
+            };
+        } else if (!tui.util.isUndefined(window.innerHeight)) {
+            getScrollHeight = function() {
+                return document.documentElement.scrollHeight - window.innerHeight;
+            };
+        } else if (document.compatMode === 'CSS1Compat') {
+            getScrollHeight = function() {
+                return document.documentElement.scrollHeight - document.documentElement.clientHeight;
             };
         } else {
             getScrollHeight = function() {
-                return layout.scrollHeight - layout.offsetHeight;
+                return document.documentElement.scrollHeight - document.body.clientHeight;
             };
         }
 
