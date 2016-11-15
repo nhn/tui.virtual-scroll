@@ -10,27 +10,11 @@
   },
   "plugins": ["plugins/markdown"],
   "templates": {
-    "cleverLinks": true,
-    "monospaceLinks": true,
-    "default": {
-      "outputSourceFiles" : true
-    },
-    "applicationName": "tui.component-virtual-scroll",
-    "disqus": "",
-    "googleAnalytics": "",
-    "openGraph": {
-      "title": "",
-      "type": "website",
-      "image": "",
-      "site_name": "",
-      "url": ""
-    },
-    "meta": {
-      "title": "",
-      "description": "",
-      "keyword": ""
-    },
-    "linenums": false
+    "name": "Virtual-Scroll",
+    "logo": {
+      "url": "https://cloud.githubusercontent.com/assets/12269563/20029815/01133928-a39a-11e6-80f3-12500a91c755.png",
+      "width": "150px"
+    }
   },
   "markdown": {
     "parser": "gfm",
@@ -38,8 +22,9 @@
   },
   "opts": {
     "recurse": true,
-    "name": "Virtual Scroll",
     "destination": "doc",
-    "tutorials": "examples"
+    "tutorials": "examples",
+    "template": "node_modules/tui-jsdoc-template",
+    "package": "package.json"
   }
 }

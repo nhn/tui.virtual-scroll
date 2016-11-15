@@ -7,10 +7,9 @@
 
 var webpack = require('webpack');
 var path = require('path');
-var Copy = require('copy-webpack-plugin');
 var pkg = require('./package.json');
 
-var ENTRY_PATH = './src/js/virtualScroll.js'
+var ENTRY_PATH = './src/js/virtualScroll.js';
 
 var isProduction = process.argv.indexOf('--production') >= 0;
 var isMinified = process.argv.indexOf('--minify') >= 0;
@@ -21,7 +20,7 @@ var eslintLoader = {
     loader: 'eslint'
 };
 
-module.exports = function() {
+module.exports = (function() {
     var readableTimestamp = (new Date()).toString();
     var bannerText = '@fileoverview ' + pkg.name + '\n' +
         '@author ' + pkg.author + '\n' +
@@ -34,7 +33,7 @@ module.exports = function() {
         output: {
             path: path.join(__dirname, (isProduction ? 'dist' : 'build')),
             publicPath: '/dev/',
-            filename: 'component-virtual-scroll' + (isMinified ? '.min' : '') + '.js'
+            filename: pkg.name + (isMinified ? '.min' : '') + '.js'
         },
         module: {
             preLoaders: [eslintLoader]
@@ -49,17 +48,6 @@ module.exports = function() {
 
     if (!isProduction) {
         config.devtool = '#inline-source-map';
-        pluginConfig.push(new Copy([
-            {
-                from: 'lib',
-                to: '../samples/lib'
-            },
-            {
-                context: 'dist',
-                from: '*',
-                to: '../samples/dist'
-            }
-        ]));
     }
 
     if (isMinified) {
@@ -73,5 +61,4 @@ module.exports = function() {
     config.plugins = pluginConfig;
 
     return config;
-
-}();
+})();

@@ -1,10 +1,10 @@
 /*!
- * @fileoverview tui.component-virtual-scroll
+ * @fileoverview tui-component-virtual-scroll
  * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
- * @version 1.0.0
+ * @version 1.0.1
  * @license MIT
  * @link https://github.nhnent.com/fe/component-virtual-scroll.git
- * bundle created at "Tue Nov 01 2016 20:48:02 GMT+0900 (KST)"
+ * bundle created at "Tue Nov 15 2016 14:27:53 GMT+0900 (KST)"
  */
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -70,6 +70,8 @@
 	var PUBLIC_EVENT_SCROLL_TOP = 'scrollTop';
 	var PUBLIC_EVENT_SCROLL_BOTTOM = 'scrollBottom';
 	var CSS_PX_PROP_MAP = {
+	    'top': true,
+	    'left': true,
 	    'height': true,
 	    'margin-top': true
 	};
@@ -85,29 +87,31 @@
 	     *      @param {?Number} options.itemHeight - item height
 	     *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
 	     *                                           for determining need emit scrollTop, scrollBottom event
-	     *      @param {?Number} options.layoutHeight - layout height
+	     *      @param {?Number} options.containerHeight - container height
 	     *      @param {?Number} options.scrollPosition - scroll position
 	     *
 	     */
 	    init: function(container, options) {
+	        var scrollPosition = options.scrollPosition;
+
 	        options = options || {};
-	        options.scrollPosition = options.scrollPosition || 0;
+	        scrollPosition = tui.util.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
 
 	        /**
 	         * last rendered scroll position
 	         * @type {Number}
 	         */
-	        this.lastRenderedScrollPosition = options.scrollPosition;
+	        this.lastRenderedScrollPosition = scrollPosition;
 
 	        /**
 	         * previous scroll position
 	         * @type {?Number}
 	         */
-	        this.prevScrollPosition = options.scrollPosition;
+	        this.prevScrollPosition = scrollPosition;
 
 	        /**
 	         * the state being a public event occurs
-	         * @type {boolean}
+	         * @type {Boolean}
 	         */
 	        this.publicEventMode = false;
 
@@ -125,7 +129,7 @@
 	         */
 	        this.layout = this._renderLayout(this.container);
 
-	        this._renderContents(options.scrollPosition);
+	        this._renderContents(scrollPosition);
 	        this._attachEvent();
 	    },
 
@@ -162,7 +166,7 @@
 	    /**
 	     * Whether plus number or not.
 	     * @param {Number} value - value
-	     * @returns {boolean}
+	     * @returns {Boolean}
 	     * @private
 	     */
 	    _isPlusNumber: function(value) {
@@ -177,15 +181,15 @@
 	     *      @param {?Number} options.itemHeight - default item height
 	     *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
 	     *                                           for determining need emit scrollTop, scrollBottom event
-	     *      @param {?Number} options.layoutHeight - layout height
+	     *      @param {?Number} options.containerHeight - container height
 	     *      @param {?Number} options.scrollPosition - scroll position
 	     * @private
 	     */
 	    _initData: function(options) {
 	        var spareItemCount = options.spareItemCount;
 	        var itemHeight = options.itemHeight;
-	        var layoutHeight = options.layoutHeight;
 	        var threshold = options.threshold;
+	        var containerHeight = options.containerHeight;
 
 	        /**
 	         * items for rendering contents.
@@ -227,7 +231,7 @@
 	         * layout height for rendering layout
 	         * @type {Number}
 	         */
-	        this.layoutHeight = this._isPlusNumber(layoutHeight) ? layoutHeight : DEFAULT_LAYOUT_HEIGHT;
+	        this.layoutHeight = this._isPlusNumber(containerHeight) ? containerHeight : DEFAULT_LAYOUT_HEIGHT;
 
 	        /**
 	         * limit scroll value for rerender
@@ -247,9 +251,9 @@
 	     */
 	    _createCssText: function(cssMap) {
 	        return tui.util.map(cssMap, function(value, property) {
-	            var surffix = CSS_PX_PROP_MAP[property] ? 'px' : '';
+	            var suffix = CSS_PX_PROP_MAP[property] ? 'px' : '';
 
-	            return property + ':' + value + surffix;
+	            return property + ':' + value + suffix;
 	        }).join(';');
 	    },
 
@@ -289,9 +293,13 @@
 	            'width': '100%',
 	            'height': this.layoutHeight,
 	            'overflow-y': 'auto',
-	            '-webkit-overflow-scrolling': 'touch'
+	            '-webkit-overflow-scrolling': 'touch',
+	            '-webkit-transform': 'translateZ(0)',
+	            '-moz-transform': 'translateZ(0)',
+	            '-ms-transform': 'translateZ(0)',
+	            '-o-transform': 'translateZ(0)',
+	            'transform': 'translateZ(0)'
 	        });
-
 	        container.innerHTML = this._createDivHtml({
 	            'style': cssText
 	        });
@@ -378,11 +386,17 @@
 	        var renderItems = this.items.slice(startIndex, endIndex);
 	        var baseCssTextMap = {
 	            'width': '100%',
-	            'overflow-y': 'hidden'
+	            'overflow-y': 'hidden',
+	            'position': 'absolute',
+	            'left': 0
 	        };
+	        var stackedTop = 0;
 
 	        return tui.util.map(renderItems, function(item) {
 	            baseCssTextMap.height = item.height || this.itemHeight;
+	            baseCssTextMap.top = stackedTop;
+
+	            stackedTop += baseCssTextMap.height;
 
 	            return this._createDivHtml({
 	                'style': this._createCssText(baseCssTextMap)
@@ -420,6 +434,7 @@
 	            'width': '100%',
 	            'height': height,
 	            'margin-top': marginTop,
+	            'position': 'relative',
 	            'overflow-y': 'hidden'
 	        });
 	    },
@@ -445,8 +460,9 @@
 	     */
 	    _renderContents: function(scrollPosition) {
 	        var layout = this.layout;
+	        var renderScrollPosition = scrollPosition || Math.max(this.layout.scrollTop, 0);
 
-	        layout.innerHTML = this._createItemWrapperHtml(scrollPosition || Math.max(this.layout.scrollTop, 0));
+	        layout.innerHTML = this._createItemWrapperHtml(renderScrollPosition);
 
 	        if (!tui.util.isExisty(scrollPosition)) {
 	            return;
@@ -477,7 +493,7 @@
 	     * @private
 	     */
 	    _onScroll: function() {
-	        var scrollPosition = Math.max(this.layout.scrollTop, 0);
+	        var scrollPosition = this.layout.scrollTop;
 	        var scrollHeight = this.layout.scrollHeight - this.layout.offsetHeight;
 	        var eventData = {
 	            scrollPosition: scrollPosition,
@@ -528,7 +544,6 @@
 	        }
 
 	        this.lastRenderedScrollPosition = scrollPosition;
-
 	        this._renderContents();
 	    },
 
@@ -663,7 +678,7 @@
 	     *  - If index type is array of number, remove items.
 	     *  - If second parameter is false, not rerendering.
 	     * @param {Array.<Number> | Number} index - remove item index or index list
-	     * @param {boolean} shouldRerender - whether should rerender or not
+	     * @param {Boolean} shouldRerender - whether should rerender or not
 	     * @returns {Array.<{height: Number, contents: String}> | {height: Number, contents: String}}
 	     * @api
 	     */
@@ -718,7 +733,7 @@
 	     * @api
 	     */
 	    resizeHeight: function(height) {
-	        var prevScrollTop;
+	        var prevScrollPosition;
 
 	        height = parseInt(height, 10);
 
@@ -726,11 +741,11 @@
 	            throw new Error('The height value should be a plus number');
 	        }
 
-	        prevScrollTop = this.layout.scrollTop;
+	        prevScrollPosition = this.layout.scrollTop;
 
 	        this.layoutHeight = height;
 	        this.layout.style.height = height + 'px';
-	        this._renderContents(prevScrollTop);
+	        this._renderContents(prevScrollPosition);
 	    },
 
 	    /**
@@ -772,13 +787,9 @@
 	});
 
 	tui.util.CustomEvents.mixin(VirtualScroll);
-
-	/**
-	 * NHN Entertainment Toast UI Chart.
-	 * @namespace tui.chart
-	 */
-	tui.util.defineNamespace('tui.component');
-	tui.component.VirtualScroll = VirtualScroll;
+	tui.util.defineNamespace('tui.component', {
+	    VirtualScroll: VirtualScroll
+	});
 
 
 /***/ },
