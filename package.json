@@ -1,6 +1,6 @@
 {
-  "name": "tui.component-virtual-scroll",
-  "version": "1.0.0",
+  "name": "tui-component-virtual-scroll",
+  "version": "1.0.1",
   "description": "NHN Ent. Toast UI virtual scroll component",
   "repository": {
     "type": "git",
@@ -17,9 +17,9 @@
     "dev": "webpack-dev-server",
     "deploy": "webpack --production & webpack --production --minify",
     "test": "karma start karma.conf.js",
-    "test:ne":  "karma start karma.conf.ne.js",
+    "test:ne": "karma start karma.conf.ne.js",
     "docs": "npm run docs:jsdoc && npm run docs:copy",
-    "docs:jsdoc": "./node_modules/.bin/jsdoc -t ./node_modules/fedoc-template -c ./jsdoc.conf.json",
+    "docs:jsdoc": "./node_modules/.bin/jsdoc -c ./jsdoc.conf.json",
     "docs:copy": "cpy dist/* doc/dist"
   },
   "devDependencies": {
@@ -28,9 +28,9 @@
     "es5-shim": "^4.5.9",
     "eslint": "^3.7.1",
     "eslint-loader": "^1.5.0",
-    "fedoc-template": "git+https://14bfd38a036366f7ca90355d202038126127bd01:x-oauth-basic@github.nhnent.com/fe/share-fedoc-template.git#develop",
     "jasmine-core": "^2.5.2",
     "karma": "^1.3.0",
+    "karma-browserstack-launcher": "^1.1.1",
     "karma-chrome-launcher": "^2.0.0",
     "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.0.2",
@@ -39,6 +39,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webdriver-launcher": "git+https://github.com/everedifice/karma-webdriver-launcher.git",
     "karma-webpack": "^1.8.0",
+    "tui-jsdoc-template": "^1.0.4",
     "webpack": "^1.13.2",
     "webpack-dev-server": "^1.16.2"
   }

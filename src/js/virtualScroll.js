@@ -733,10 +733,6 @@ var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
 });
 
 tui.util.CustomEvents.mixin(VirtualScroll);
-
-/**
- * NHN Entertainment Toast UI Chart.
- * @namespace tui.chart
- */
-tui.util.defineNamespace('tui.component');
-tui.component.VirtualScroll = VirtualScroll;
+tui.util.defineNamespace('tui.component', {
+    VirtualScroll: VirtualScroll
+});
