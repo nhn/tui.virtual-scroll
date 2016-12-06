@@ -71,25 +71,74 @@
         <div id="example-js" class="hidden"><pre class="prettyprint source">
     var container = document.getElementById('virtual-scroll-container');
     var index = 1;
-    var contents = '&lt;div class="title">Good deals&lt;span class="price">$ 999&lt;/span>&lt;/div>' +
-            '&lt;div class="contents">&lt;img src="https://dummyimage.com/240x80/cccccc/0011ff">&lt;/div>' +
-            '&lt;div class="price">&lt;/div>';
+    var baseItems = [
+        {
+            title: 'Yankee Candle',
+            price: 300,
+            img: 'img/vs_img1.jpg'
+        }, {
+            title: 'Lamy pen',
+            price: 240,
+            img: 'img/vs_img2.jpg'
+        }, {
+            title: 'Ear ring',
+            price: 99,
+            img: 'img/vs_img3.jpg'
+        }, {
+            title: 'Premium detergent',
+            price: 199,
+            img: 'img/vs_img4.jpg'
+        }, {
+            title: 'Royce chocolate',
+            price: 410,
+            img: 'img/vs_img5.jpg'
+        }, {
+            title: 'Hair drier',
+            price: 210,
+            img: 'img/vs_img6.jpg'
+        }, {
+            title: 'Spare battery',
+            price: 110,
+            img: 'img/vs_img7.jpg'
+        }, {
+            title: 'Eyelashes',
+            price: 55,
+            img: 'img/vs_img8.jpg'
+        }, {
+            title: 'Beauty mask pack',
+            price: 75,
+            img: 'img/vs_img9.jpg'
+        }, {
+            title: 'Wet tissue',
+            price: 120,
+            img: 'img/vs_img10.jpg'
+        }
+    ];
+    var createItemHtml = function(item) {
+        return '&lt;div class="contents">&lt;img src="' + item.img + '">&lt;/div>' +
+               '&lt;div class="title">' + item.title + '&lt;/div>' +
+               '&lt;div class="price">$' + item.price + '&lt;/div>';
+    };
     var makeItems = function(count, startIndex) {
+        var baseItemCount = baseItems.length;
+
         startIndex = startIndex || 0;
 
-        return tui.util.map(tui.util.range(startIndex, startIndex + count), function() {
+        return tui.util.map(tui.util.range(startIndex, startIndex + count), function(index) {
+            var item = baseItems[index % baseItemCount];
+
             return {
-                height: 150,
-                contents: contents
+                height: 245,
+                contents: createItemHtml(item)
             }
         });
     };
-    var items = makeItems(19);
+    var items = makeItems(10);
     var vs;
 
     items.unshift({
-        height: 50,
-        contents: '&lt;div class="header">&amp;nbsp;Virtual Scroll&lt;/div>'
+        height: 56,
+        contents: '&lt;div class="header">Virtual Scroll&lt;/div>'
     });
     items.push({
         height: 40,
@@ -116,7 +165,7 @@
         }
 
         setTimeout(function() {
-            vs.insert(makeItems(10, index * 10), vs.getItemCount() - 2);
+            vs.insert(makeItems(10, index * 8), vs.getItemCount() - 2);
             index += 1;
 
             if (index > 10) {
