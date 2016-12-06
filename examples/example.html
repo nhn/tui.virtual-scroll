@@ -28,6 +28,7 @@
         }
 
         .header {
+            padding-left: 15px;
             line-height: 50px;
             font-size: 20px;
             font-weight: bold;
@@ -99,6 +100,26 @@
             title: 'Royce chocolate',
             price: 410,
             img: 'img/vs_img5.jpg'
+        }, {
+            title: 'Hair drier',
+            price: 210,
+            img: 'img/vs_img6.jpg'
+        }, {
+            title: 'Spare battery',
+            price: 110,
+            img: 'img/vs_img7.jpg'
+        }, {
+            title: 'Eyelashes',
+            price: 55,
+            img: 'img/vs_img8.jpg'
+        }, {
+            title: 'Beauty mask pack',
+            price: 75,
+            img: 'img/vs_img9.jpg'
+        }, {
+            title: 'Wet tissue',
+            price: 120,
+            img: 'img/vs_img10.jpg'
         }
     ];
     var createItemHtml = function(item) {
@@ -120,12 +141,12 @@
             }
         });
     };
-    var items = makeItems(19);
+    var items = makeItems(10);
     var vs;
 
     items.unshift({
         height: 56,
-        contents: '<div class="header">&nbsp;Toast UI Component</div>'
+        contents: '<div class="header">Virtual Scroll</div>'
     });
     items.push({
         height: 40,
@@ -152,7 +173,7 @@
         }
 
         setTimeout(function() {
-            vs.insert(makeItems(10, index * 10), vs.getItemCount() - 2);
+            vs.insert(makeItems(10, index * 8), vs.getItemCount() - 2);
             index += 1;
 
             if (index > 10) {
