@@ -1,16 +1,17 @@
 /**
  * @fileoverview Event listener.
- * @author NHN Ent.
- *         FE Development Lab <dl_javascript@nhnent.com>
+ * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
  */
 
 'use strict';
+
+var snippet = require('tui-code-snippet');
 
 var bindHandlerMap = {};
 
 /**
  * Event listener.
- * @module eventListener
+ * @ignore
  */
 var eventListener = {
     /**
@@ -26,7 +27,7 @@ var eventListener = {
         var bindHandler;
 
         if (context) {
-            bindHandler = tui.util.bind(handler, context);
+            bindHandler = snippet.bind(handler, context);
         } else {
             bindHandler = handler;
         }
@@ -48,7 +49,7 @@ var eventListener = {
         var bindHandler;
 
         if (context) {
-            bindHandler = tui.util.bind(handler, context);
+            bindHandler = snippet.bind(handler, context);
         } else {
             bindHandler = handler;
         }
@@ -89,14 +90,14 @@ var eventListener = {
      */
     on: function(target, types, handler, context) {
         var handlerMap = {};
-        if (tui.util.isString(types)) {
+        if (snippet.isString(types)) {
             handlerMap[types] = handler;
         } else {
             handlerMap = types;
             context = handler;
         }
 
-        tui.util.forEach(handlerMap, function(_handler, type) {
+        snippet.forEach(handlerMap, function(_handler, type) {
             eventListener._bindEvent(target, type, _handler, context);
         });
     },
@@ -159,13 +160,13 @@ var eventListener = {
      */
     off: function(target, types, handler) {
         var handlerMap = {};
-        if (tui.util.isString(types)) {
+        if (snippet.isString(types)) {
             handlerMap[types] = handler;
         } else {
             handlerMap = types;
         }
 
-        tui.util.forEach(handlerMap, function(_handler, type) {
+        snippet.forEach(handlerMap, function(_handler, type) {
             eventListener._unbindEvent(target, type, _handler);
         });
     }

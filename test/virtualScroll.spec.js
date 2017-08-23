@@ -1,5 +1,7 @@
 'use strict';
 
+var VirtualScroll = require('../src/js/virtualScroll');
+
 describe('tui.component.VirtualScroll', function() {
     var virtualScroll;
 
@@ -7,7 +9,7 @@ describe('tui.component.VirtualScroll', function() {
         var container = document.createElement('DIV');
 
         document.body.appendChild(container);
-        virtualScroll = new tui.component.VirtualScroll(container, {});
+        virtualScroll = new VirtualScroll(container, {});
     });
 
     describe('_makeItemPositionList()', function() {
