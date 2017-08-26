@@ -13,7 +13,7 @@ Component which enables to render only visible items according to the scroll pos
 [https://nhnent.github.io/tui.virtual-scroll/latest/tutorial-example01-basic.html](https://nhnent.github.io/tui.virtual-scroll/latest/tutorial-example01-basic.html)
 
 ## Dependency
-* tui-code-snippet ~1.2.5
+* [tui-code-snippet](https://github.com/nhnent/tui.code-snippet) >=1.2.5
 
 ## Test Environment
 ### PC
