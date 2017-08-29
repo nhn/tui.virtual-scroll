@@ -1,5 +1,7 @@
 'use strict';
 
+var VirtualScroll = require('../src/js/virtualScroll');
+
 describe('tui.component.VirtualScroll', function() {
     var virtualScroll;
 
@@ -7,7 +9,7 @@ describe('tui.component.VirtualScroll', function() {
         var container = document.createElement('DIV');
 
         document.body.appendChild(container);
-        virtualScroll = new tui.component.VirtualScroll(container, {});
+        virtualScroll = new VirtualScroll(container, {});
     });
 
     describe('_makeItemPositionList()', function() {
@@ -60,18 +62,20 @@ describe('tui.component.VirtualScroll', function() {
     describe('_renderLayout()', function() {
         it('if container is not exist, throw error message', function() {
             var container;
-
-            expect(function() {
+            var mock = function() {
                 virtualScroll._renderLayout(container);
-            }).toThrowError('Not exist HTML container');
+            };
+
+            expect(mock).toThrowError('Not exist HTML container');
         });
 
         it('if container is not HTML element, throw error message', function() {
             var container = 'container';
-
-            expect(function() {
+            var mock = function() {
                 virtualScroll._renderLayout(container);
-            }).toThrowError('This container is not a HTML element');
+            };
+
+            expect(mock).toThrowError('This container is not a HTML element');
         });
 
         it('render layout', function() {
@@ -89,18 +93,16 @@ describe('tui.component.VirtualScroll', function() {
 
     describe('_findActualStartIndex()', function() {
         it('find actual start index in itemPositionList by scrollPosition', function() {
-            var itemPositionList = [
-                {
-                    start: 1,
-                    end: 50
-                }, {
-                    start: 51,
-                    end: 150
-                }, {
-                    start: 151,
-                    end: 350
-                }
-            ];
+            var itemPositionList = [{
+                start: 1,
+                end: 50
+            }, {
+                start: 51,
+                end: 150
+            }, {
+                start: 151,
+                end: 350
+            }];
             var scrollPosition = 75;
             var actual = virtualScroll._findActualStartIndex(itemPositionList, scrollPosition);
 
@@ -113,7 +115,8 @@ describe('tui.component.VirtualScroll', function() {
                 {
                     start: 1,
                     end: 50
-                }, {
+                },
+                {
                     start: 51,
                     end: 150
                 }, {
@@ -156,13 +159,34 @@ describe('tui.component.VirtualScroll', function() {
             virtualScroll.spareItemCount = 1;
             virtualScroll.itemHeightList = [50, 100, 100, 100, 100, 100, 80];
             virtualScroll.itemPositionList = [
-                {start: 0, end: 50},
-                {start: 50, end: 150},
-                {start: 150, end: 250},
-                {start: 250, end: 350},
-                {start: 350, end: 450},
-                {start: 450, end: 550},
-                {start: 550, end: 600}
+                {
+                    start: 0,
+                    end: 50
+                },
+                {
+                    start: 50,
+                    end: 150
+                },
+                {
+                    start: 150,
+                    end: 250
+                },
+                {
+                    start: 250,
+                    end: 350
+                },
+                {
+                    start: 350,
+                    end: 450
+                },
+                {
+                    start: 450,
+                    end: 550
+                },
+                {
+                    start: 550,
+                    end: 600
+                }
             ];
         });
 
@@ -198,11 +222,26 @@ describe('tui.component.VirtualScroll', function() {
             var actual, expected;
 
             virtualScroll.items = [
-                {height: 50, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'},
-                {height: 80, contents: 'E'}
+                {
+                    height: 50,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                },
+                {
+                    height: 80,
+                    contents: 'E'
+                }
             ];
 
             actual = virtualScroll._createItemsHtml(startIndex, endIndex);
@@ -243,19 +282,49 @@ describe('tui.component.VirtualScroll', function() {
             var actual, expected;
 
             virtualScroll.items = [
-                {height: 50, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'},
-                {height: 80, contents: 'E'}
+                {
+                    height: 50,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                },
+                {
+                    height: 80,
+                    contents: 'E'
+                }
             ];
             virtualScroll.itemHeightList = [50, 100, 100, 100, 80];
             virtualScroll.itemPositionList = [
-                {start: 0, end: 50},
-                {start: 50, end: 150},
-                {start: 150, end: 250},
-                {start: 250, end: 350},
-                {start: 350, end: 430}
+                {
+                    start: 0,
+                    end: 50
+                },
+                {
+                    start: 50,
+                    end: 150
+                },
+                {
+                    start: 150,
+                    end: 250
+                },
+                {
+                    start: 250,
+                    end: 350
+                },
+                {
+                    start: 350,
+                    end: 430
+                }
             ];
             virtualScroll.spareItemCount = 1;
 
@@ -265,7 +334,7 @@ describe('tui.component.VirtualScroll', function() {
                 '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:100px">C</div>' +
                 '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:100px;top:200px">D</div>' +
                 '<div style="width:100%;overflow-y:hidden;position:absolute;left:0px;height:80px;top:300px">E</div>' +
-            '</div>';
+                '</div>';
 
             expect(actual).toBe(expected);
         });
@@ -307,7 +376,8 @@ describe('tui.component.VirtualScroll', function() {
         });
 
         it('correct items, when item of items is null or undefined', function() {
-            var items = [null, undefined];
+            var foo;
+            var items = [null, foo];
             var actual;
 
             virtualScroll.itemHeight = 100;
@@ -323,17 +393,35 @@ describe('tui.component.VirtualScroll', function() {
             var items = ['C', 'D'];
 
             virtualScroll.items = [
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ];
             virtualScroll.itemHeight = 100;
             virtualScroll._insertItems(items, 0);
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'},
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                },
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ]);
         });
 
@@ -341,17 +429,35 @@ describe('tui.component.VirtualScroll', function() {
             var items = ['C', 'D'];
 
             virtualScroll.items = [
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ];
             virtualScroll.itemHeight = 100;
             virtualScroll._insertItems(items, 1);
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ]);
         });
 
@@ -359,17 +465,35 @@ describe('tui.component.VirtualScroll', function() {
             var items = ['C', 'D'];
 
             virtualScroll.items = [
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ];
             virtualScroll.itemHeight = 100;
             virtualScroll._insertItems(items, 2);
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
         });
     });
@@ -379,22 +503,46 @@ describe('tui.component.VirtualScroll', function() {
             var wrapperElement;
 
             virtualScroll.items = [
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ];
 
             virtualScroll.append([
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
 
             wrapperElement = virtualScroll.layout.firstChild;
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
             expect(wrapperElement.childNodes.length).toBe(4);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
@@ -409,22 +557,46 @@ describe('tui.component.VirtualScroll', function() {
             var wrapperElement;
 
             virtualScroll.items = [
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ];
 
             virtualScroll.prepend([
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
 
             wrapperElement = virtualScroll.layout.firstChild;
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'},
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                },
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ]);
             expect(wrapperElement.childNodes.length).toBe(4);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('C');
@@ -439,22 +611,46 @@ describe('tui.component.VirtualScroll', function() {
             var wrapperElement;
 
             virtualScroll.items = [
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ];
 
             virtualScroll.insert([
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ], 1);
 
             wrapperElement = virtualScroll.layout.firstChild;
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ]);
             expect(wrapperElement.childNodes.length).toBe(4);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
@@ -467,10 +663,22 @@ describe('tui.component.VirtualScroll', function() {
     describe('_removeItem()', function() {
         beforeEach(function() {
             virtualScroll.append([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
         });
 
@@ -478,9 +686,18 @@ describe('tui.component.VirtualScroll', function() {
             virtualScroll._removeItem(1);
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
         });
 
@@ -500,9 +717,18 @@ describe('tui.component.VirtualScroll', function() {
             virtualScroll._removeItem(1, false);
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
         });
     });
@@ -510,17 +736,35 @@ describe('tui.component.VirtualScroll', function() {
     describe('removeItems()', function() {
         it('remove items', function() {
             virtualScroll.append([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
 
             virtualScroll._removeItems([1, 3]);
 
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                }
             ]);
         });
     });
@@ -528,10 +772,22 @@ describe('tui.component.VirtualScroll', function() {
     describe('remove()', function() {
         beforeEach(function() {
             virtualScroll.append([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
         });
 
@@ -542,12 +798,24 @@ describe('tui.component.VirtualScroll', function() {
             wrapperElement = virtualScroll.layout.firstChild;
 
             expect(actual).toEqual([
-                {height: 100, contents: 'B'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'B'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                }
             ]);
 
             expect(wrapperElement.childNodes.length).toBe(2);
@@ -561,11 +829,23 @@ describe('tui.component.VirtualScroll', function() {
             actual = virtualScroll.remove(1);
             wrapperElement = virtualScroll.layout.firstChild;
 
-            expect(actual).toEqual({height: 100, contents: 'B'});
+            expect(actual).toEqual({
+                height: 100,
+                contents: 'B'
+            });
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'C'},
-                {height: 100, contents: 'D'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'C'
+                },
+                {
+                    height: 100,
+                    contents: 'D'
+                }
             ]);
             expect(wrapperElement.childNodes.length).toBe(3);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
@@ -579,14 +859,26 @@ describe('tui.component.VirtualScroll', function() {
             var wrapperElement;
 
             virtualScroll.append([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ]);
 
             wrapperElement = virtualScroll.layout.firstChild;
             expect(virtualScroll.items).toEqual([
-                {height: 100, contents: 'A'},
-                {height: 100, contents: 'B'}
+                {
+                    height: 100,
+                    contents: 'A'
+                },
+                {
+                    height: 100,
+                    contents: 'B'
+                }
             ]);
             expect(wrapperElement.childNodes.length).toBe(2);
             expect(wrapperElement.childNodes[0].innerHTML).toBe('A');
