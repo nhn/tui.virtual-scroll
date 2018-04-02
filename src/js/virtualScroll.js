@@ -6,6 +6,7 @@
 'use strict';
 
 var snippet = require('tui-code-snippet');
+var util = require('./util');
 
 var eventListener = require('./eventListener');
 
@@ -35,6 +36,7 @@ var CSS_PX_PROP_MAP = {
  *                                           for determining need emit scrollTop, scrollBottom event
  *      @param {?Number} options.containerHeight - container height
  *      @param {?Number} options.scrollPosition - scroll position
+ *      @param {Boolean} [options.usageStatistics=true|false] send hostname to google analytics [default value is true]
  * @example
  * var VirtualScroll = tui.VirtualScroll; // require('tui-virtual-scroll');
  * var container = document.getElementById('virtual-scroll-container');
@@ -50,7 +52,10 @@ var VirtualScroll = snippet.defineClass(/** @lends VirtualScroll.prototype */{
     init: function(container, options) {
         var scrollPosition = options.scrollPosition;
 
-        options = options || {};
+        options = snippet.extend({
+            usageStatistics: true
+        }, options || {});
+
         scrollPosition = snippet.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
 
         /**
@@ -92,6 +97,10 @@ var VirtualScroll = snippet.defineClass(/** @lends VirtualScroll.prototype */{
 
         this._renderContents(scrollPosition);
         this._attachEvent();
+
+        if (options.usageStatistics) {
+            util.sendHostName();
+        }
     },
 
     /**
