@@ -74,6 +74,26 @@ $ bower install tui-virtual-scroll#<tag> # Specific version
 * [Download all sources for each version](https://github.com/nhnent/tui.virtual-scroll/releases)
 
 
+### Via Contents Delivery Network (CDN)
+The TOAST UI Component: Virtual Scroll is available over a CDN.
+
+- You can use cdn as below.
+
+```html
+<script src="https://uicdn.toast.com/tui.virtual-scroll/latest/tui-virtual-scroll.min.js"></script>
+```
+
+
+- Within the download you'll find the following directories
+
+```
+tui.virtual-scroll/
+├─ latest
+│  ├─ tui-virtual-scroll.js
+│  ├─ tui-virtual-scroll.min.js
+```
+
+
 ## 🔨 Usage
 
 ### HTML
