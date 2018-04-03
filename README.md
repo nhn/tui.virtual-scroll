@@ -14,8 +14,8 @@
 * [Examples](#-examples)
 * [Install](#-install)
     * [Via Package Manager](#via-package-manager)
-    * [Download Source Files](#download-source-files)
     * [Via Contents Delivery Network (CDN)](#via-contents-delivery-network-cdn)
+    * [Download Source Files](#download-source-files)
 * [Usage](#-usage)
     * [HTML](#html)
     * [JavaScript](#javascript)
@@ -70,30 +70,34 @@ $ bower install tui-virtual-scroll # Latest version
 $ bower install tui-virtual-scroll#<tag> # Specific version
 ```
 
-### Download Source Files
-* [Download bundle files](https://github.com/nhnent/tui.virtual-scroll/tree/production/dist)
-* [Download all sources for each version](https://github.com/nhnent/tui.virtual-scroll/releases)
-
-
 ### Via Contents Delivery Network (CDN) 
 
 TOAST UI products are available over a CDN powered by [TOAST Cloud](https://www.toast.com)
 
-- You can use cdn as below.
+You can use CDN as below.
 
 ```html
 <script src="https://uicdn.toast.com/tui.virtual-scroll/latest/tui-virtual-scroll.js"></script>
 ```
 
+If you want to use a specific version, use the tag name instead of `latest` in the url's path.
 
-- Within the download you'll find the following directories
+The CDN directory has the following structure.
 
 ```
 tui.virtual-scroll/
-├─ latest
+├─ latest/
 │  ├─ tui-virtual-scroll.js
 │  ├─ tui-virtual-scroll.min.js
+├─ v2.0.0/
+│  ├─ ...
 ```
+
+### Download Source Files
+* [Download bundle files](https://github.com/nhnent/tui.virtual-scroll/tree/production/dist)
+* [Download all sources for each version](https://github.com/nhnent/tui.virtual-scroll/releases)
+
+
 
 
 ## 🔨 Usage
