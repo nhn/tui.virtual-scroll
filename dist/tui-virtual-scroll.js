@@ -1,6 +1,6 @@
 /*!
  * tui-virtual-scroll.js
- * @version 2.0.0
+ * @version 2.1.0
  * @author NHNEnt FE Development Lab <dl_javascript@nhnent.com>
  * @license MIT
  */
@@ -68,7 +68,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	'use strict';
 
 	var snippet = __webpack_require__(1);
-
 	var eventListener = __webpack_require__(2);
 
 	var DEFAULT_CONTENT_HEIGHT = 50;
@@ -84,6 +83,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'height': true,
 	    'margin-top': true
 	};
+	var sendHostName = function() {
+	    var hostname = location.hostname;
+	    snippet.imagePing('https://www.google-analytics.com/collect', {
+	        v: 1,
+	        t: 'event',
+	        tid: 'UA-115377265-9',
+	        cid: hostname,
+	        dp: hostname,
+	        dh: 'virtual-scroll'
+	    });
+	};
 
 	/**
 	 * Virtual scroll component.
@@ -97,6 +107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 *                                           for determining need emit scrollTop, scrollBottom event
 	 *      @param {?Number} options.containerHeight - container height
 	 *      @param {?Number} options.scrollPosition - scroll position
+	 *      @param {Boolean} [options.usageStatistics=true|false] send hostname to google analytics [default value is true]
 	 * @example
 	 * var VirtualScroll = tui.VirtualScroll; // require('tui-virtual-scroll');
 	 * var container = document.getElementById('virtual-scroll-container');
@@ -110,9 +121,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	 */
 	var VirtualScroll = snippet.defineClass(/** @lends VirtualScroll.prototype */{
 	    init: function(container, options) {
-	        var scrollPosition = options.scrollPosition;
+	        var scrollPosition;
 
-	        options = options || {};
+	        options = snippet.extend({
+	            usageStatistics: true
+	        }, options);
+
+	        scrollPosition = options.scrollPosition;
 	        scrollPosition = snippet.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
 
 	        /**
@@ -154,6 +169,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        this._renderContents(scrollPosition);
 	        this._attachEvent();
+
+	        if (options.usageStatistics) {
+	            sendHostName();
+	        }
 	    },
 
 	    /**
