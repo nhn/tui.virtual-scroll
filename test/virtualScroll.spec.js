@@ -1,5 +1,6 @@
 'use strict';
 
+var snippet = require('tui-code-snippet');
 var VirtualScroll = require('../src/js/virtualScroll');
 
 describe('tui.component.VirtualScroll', function() {
@@ -908,6 +909,24 @@ describe('tui.component.VirtualScroll', function() {
 
             expect(virtualScroll.layoutHeight).toBe(700);
             expect(virtualScroll.layout.style.height).toBe('700px');
+        });
+    });
+    describe('usageStatistics', function() {
+        beforeEach(function() {
+            this.virtualScroll = null;
+            spyOn(snippet, 'imagePing');
+        });
+
+        it('should send hostname by default', function() {
+            this.virtualScroll = new VirtualScroll(document.createElement('div'));
+
+            expect(snippet.imagePing).toHaveBeenCalled();
+        });
+
+        it('should not send hostname on usageStatistics option false', function() {
+            this.virtualScroll = new VirtualScroll(document.createElement('div'), {usageStatistics: false});
+
+            expect(snippet.imagePing).not.toHaveBeenCalled();
         });
     });
 });
