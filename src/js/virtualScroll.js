@@ -50,12 +50,13 @@ var CSS_PX_PROP_MAP = {
  */
 var VirtualScroll = snippet.defineClass(/** @lends VirtualScroll.prototype */{
     init: function(container, options) {
-        var scrollPosition = options.scrollPosition;
+        var scrollPosition;
 
         options = snippet.extend({
             usageStatistics: true
-        }, options || {});
+        }, options);
 
+        scrollPosition = options.scrollPosition;
         scrollPosition = snippet.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
 
         /**
