@@ -15,6 +15,7 @@
 * [Install](#-install)
     * [Via Package Manager](#via-package-manager)
     * [Download Source Files](#download-source-files)
+    * [Via Contents Delivery Network (CDN)](#via-contents-delivery-network-cdn)
 * [Usage](#-usage)
     * [HTML](#html)
     * [JavaScript](#javascript)
@@ -46,11 +47,6 @@
 
 ## 💾 Install
 
-* [Install](#-install)
-    * [Via Package Manager](#via-package-manager)
-    * [Download Source Files](#download-source-files)
-    * [Via Contents Delivery Network (CDN)](#via-contents-delivery-network-cdn)
-
 TOAST UI products can be used by using the package manager or downloading the source directly.
 However, we highly recommend using the package manager.
 
@@ -80,8 +76,6 @@ $ bower install tui-virtual-scroll#<tag> # Specific version
 
 
 ### Via Contents Delivery Network (CDN) 
-
-[Powered by TOAST Cloud](https://www.toast.com/)
 
 TOAST UI products are available over a CDN powered by [TOAST Cloud](https://www.toast.com)
 
