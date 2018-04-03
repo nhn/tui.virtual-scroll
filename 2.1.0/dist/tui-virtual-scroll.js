@@ -1,12 +1,20 @@
 /*!
- * @fileoverview tui-component-virtual-scroll
- * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
- * @version 1.0.1
+ * tui-virtual-scroll.js
+ * @version 2.1.0
+ * @author NHNEnt FE Development Lab <dl_javascript@nhnent.com>
  * @license MIT
- * @link https://github.nhnent.com/fe/component-virtual-scroll.git
- * bundle created at "Tue Nov 15 2016 14:27:53 GMT+0900 (KST)"
  */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("tui-code-snippet"));
+	else if(typeof define === 'function' && define.amd)
+		define(["tui-code-snippet"], factory);
+	else if(typeof exports === 'object')
+		exports["VirtualScroll"] = factory(require("tui-code-snippet"));
+	else
+		root["tui"] = root["tui"] || {}, root["tui"]["VirtualScroll"] = factory((root["tui"] && root["tui"]["util"]));
+})(this, function(__WEBPACK_EXTERNAL_MODULE_1__) {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -42,7 +50,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "/dev/";
+/******/ 	__webpack_require__.p = "dist";
 
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -50,17 +58,17 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ function(module, exports, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileoverview Virtual scroll component.
-	 * @author NHN Ent.
-	 *         FE Development Lab <dl_javascript@nhnent.com>
+	 * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
 	 */
 
 	'use strict';
 
-	var eventListener = __webpack_require__(1);
+	var snippet = __webpack_require__(1);
+	var eventListener = __webpack_require__(2);
 
 	var DEFAULT_CONTENT_HEIGHT = 50;
 	var DEFAULT_SPARE_ITEM_COUNT = 5;
@@ -75,43 +83,71 @@
 	    'height': true,
 	    'margin-top': true
 	};
+	var sendHostName = function() {
+	    var hostname = location.hostname;
+	    snippet.imagePing('https://www.google-analytics.com/collect', {
+	        v: 1,
+	        t: 'event',
+	        tid: 'UA-115377265-9',
+	        cid: hostname,
+	        dp: hostname,
+	        dh: 'virtual-scroll'
+	    });
+	};
 
-	var VirtualScroll = tui.util.defineClass(/** @lends VirtualScroll.prototype */{
-	    /**
-	     * Virtual scroll component.
-	     * @constructs VirtualScroll
-	     * @param {HTMLElement|String} container - container element or id
-	     * @param {object} options - virtual scroll component  options
-	     *      @param {?Array.<String>} options.items - items
-	     *      @param {?Number} options.spareItemCount - count of spare items for display items
-	     *      @param {?Number} options.itemHeight - item height
-	     *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
-	     *                                           for determining need emit scrollTop, scrollBottom event
-	     *      @param {?Number} options.containerHeight - container height
-	     *      @param {?Number} options.scrollPosition - scroll position
-	     *
-	     */
+	/**
+	 * Virtual scroll component.
+	 * @class
+	 * @param {HTMLElement|String} container - container element or id
+	 * @param {object} options - virtual scroll component  options
+	 *      @param {?Array.<String>} options.items - items
+	 *      @param {?Number} options.spareItemCount - count of spare items for display items
+	 *      @param {?Number} options.itemHeight - item height
+	 *      @param {?Number} options.threshold - pixel height from edge(start, end) of content
+	 *                                           for determining need emit scrollTop, scrollBottom event
+	 *      @param {?Number} options.containerHeight - container height
+	 *      @param {?Number} options.scrollPosition - scroll position
+	 *      @param {Boolean} [options.usageStatistics=true|false] send hostname to google analytics [default value is true]
+	 * @example
+	 * var VirtualScroll = tui.VirtualScroll; // require('tui-virtual-scroll');
+	 * var container = document.getElementById('virtual-scroll-container');
+	 * var instance = new VirtualScroll(container, {
+	 *     scrollPosition: 0,
+	 *     itemHeight: 150,
+	 *     spareItemCount: 5,
+	 *     layoutHeight: 400,
+	 *     items: items
+	 * });
+	 */
+	var VirtualScroll = snippet.defineClass(/** @lends VirtualScroll.prototype */{
 	    init: function(container, options) {
-	        var scrollPosition = options.scrollPosition;
+	        var scrollPosition;
 
-	        options = options || {};
-	        scrollPosition = tui.util.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
+	        options = snippet.extend({
+	            usageStatistics: true
+	        }, options);
+
+	        scrollPosition = options.scrollPosition;
+	        scrollPosition = snippet.isNumber(scrollPosition) ? Math.max(scrollPosition, 0) : 0;
 
 	        /**
 	         * last rendered scroll position
 	         * @type {Number}
+	         * @private
 	         */
 	        this.lastRenderedScrollPosition = scrollPosition;
 
 	        /**
 	         * previous scroll position
 	         * @type {?Number}
+	         * @private
 	         */
 	        this.prevScrollPosition = scrollPosition;
 
 	        /**
 	         * the state being a public event occurs
 	         * @type {Boolean}
+	         * @private
 	         */
 	        this.publicEventMode = false;
 
@@ -120,17 +156,23 @@
 	        /**
 	         * container element
 	         * @type {HTMLElement}
+	         * @private
 	         */
-	        this.container = tui.util.isString(container) ? document.getElementById(container) : container;
+	        this.container = snippet.isString(container) ? document.getElementById(container) : container;
 
 	        /**
 	         * layout element
 	         * @type {HTMLElement}
+	         * @private
 	         */
 	        this.layout = this._renderLayout(this.container);
 
 	        this._renderContents(scrollPosition);
 	        this._attachEvent();
+
+	        if (options.usageStatistics) {
+	            sendHostName();
+	        }
 	    },
 
 	    /**
@@ -142,7 +184,7 @@
 	    _makeItemPositionList: function(itemHeightList) {
 	        var startPosition = 0;
 
-	        return tui.util.map(itemHeightList, function(itemHeight) {
+	        return snippet.map(itemHeightList, function(itemHeight) {
 	            var itemPosition = {
 	                start: startPosition,
 	                end: startPosition + itemHeight
@@ -159,7 +201,7 @@
 	     * @private
 	     */
 	    _updateItemData: function() {
-	        this.itemHeightList = tui.util.pluck(this.items, 'height');
+	        this.itemHeightList = snippet.pluck(this.items, 'height');
 	        this.itemPositionList = this._makeItemPositionList(this.itemHeightList);
 	    },
 
@@ -170,7 +212,7 @@
 	     * @private
 	     */
 	    _isPlusNumber: function(value) {
-	        return tui.util.isNumber(value) && !isNaN(value) && (value >= 0);
+	        return snippet.isNumber(value) && !isNaN(value) && (value >= 0);
 	    },
 
 	    /**
@@ -194,48 +236,56 @@
 	        /**
 	         * items for rendering contents.
 	         * @type {Array.<{height: Number, contents: String}>}
+	         * @private
 	         */
 	        this.items = [];
 
 	        /**
 	         * item height list.
 	         * @type {Array.<Number>}
+	         * @private
 	         */
 	        this.itemHeightList = [];
 
 	        /**
 	         * item position list.
 	         * @type {Array.<Number>}
+	         * @private
 	         */
 	        this.itemPositionList = [];
 
 	        /**
 	         * item height for rendering item.
 	         * @type {Number}
+	         * @private
 	         */
 	        this.itemHeight = this._isPlusNumber(itemHeight) ? itemHeight : DEFAULT_CONTENT_HEIGHT;
 
 	        /**
 	         * spare item count for rendering margin of wrapper area
 	         * @type {Number}
+	         * @private
 	         */
 	        this.spareItemCount = this._isPlusNumber(spareItemCount) ? spareItemCount : DEFAULT_SPARE_ITEM_COUNT;
 
 	        /**
 	         * pixel height from edge(start, end) of content for determining need emit scrollTop, scrollBottom event
 	         * @type {number}
+	         * @private
 	         */
 	        this.threshold = this._isPlusNumber(threshold) ? threshold : DEFAULT_THRESHOLD;
 
 	        /**
 	         * layout height for rendering layout
 	         * @type {Number}
+	         * @private
 	         */
 	        this.layoutHeight = this._isPlusNumber(containerHeight) ? containerHeight : DEFAULT_LAYOUT_HEIGHT;
 
 	        /**
 	         * limit scroll value for rerender
 	         * @type {number}
+	         * @private
 	         */
 	        this.limitScrollValueForRerender = (this.spareItemCount / 2 * this.itemHeight);
 
@@ -250,7 +300,7 @@
 	     * @private
 	     */
 	    _createCssText: function(cssMap) {
-	        return tui.util.map(cssMap, function(value, property) {
+	        return snippet.map(cssMap, function(value, property) {
 	            var suffix = CSS_PX_PROP_MAP[property] ? 'px' : '';
 
 	            return property + ':' + value + suffix;
@@ -265,7 +315,7 @@
 	     * @private
 	     */
 	    _createDivHtml: function(attrMap, innerHtml) {
-	        var attrString = tui.util.map(attrMap, function(value, property) {
+	        var attrString = snippet.map(attrMap, function(value, property) {
 	            return property + '="' + value + '"';
 	        }).join(' ');
 
@@ -285,7 +335,7 @@
 	            throw new Error('Not exist HTML container');
 	        }
 
-	        if (!tui.util.isHTMLTag(container)) {
+	        if (!snippet.isHTMLTag(container)) {
 	            throw new Error('This container is not a HTML element');
 	        }
 
@@ -318,15 +368,15 @@
 	        var foundIndex = null;
 
 	        scrollPosition = scrollPosition || 0;
-	        tui.util.forEachArray(itemPositionList, function(itemPosition, index) {
+	        snippet.forEachArray(itemPositionList, function(itemPosition, index) {
 	            if (itemPosition.start <= scrollPosition && itemPosition.end > scrollPosition) {
 	                foundIndex = index;
 	            }
 
-	            return tui.util.isEmpty(foundIndex);
+	            return snippet.isEmpty(foundIndex);
 	        });
 
-	        if (itemPositionList.length && tui.util.isNull(foundIndex)) {
+	        if (itemPositionList.length && snippet.isNull(foundIndex)) {
 	            foundIndex = itemPositionList.length - 1;
 	        }
 
@@ -344,7 +394,7 @@
 	        var cumulativeHeight = 0;
 	        var displayCount = 0;
 
-	        tui.util.forEachArray(displayItemHeights, function(height) {
+	        snippet.forEachArray(displayItemHeights, function(height) {
 	            cumulativeHeight += height;
 	            displayCount += 1;
 
@@ -392,7 +442,7 @@
 	        };
 	        var stackedTop = 0;
 
-	        return tui.util.map(renderItems, function(item) {
+	        return snippet.map(renderItems, function(item) {
 	            baseCssTextMap.height = item.height || this.itemHeight;
 	            baseCssTextMap.top = stackedTop;
 
@@ -414,7 +464,8 @@
 	        var copyValues = values.slice();
 
 	        copyValues.unshift(0);
-	        return tui.util.reduce(copyValues, function(base, add) {
+
+	        return snippet.reduce(copyValues, function(base, add) {
 	            return base + add;
 	        });
 	    },
@@ -464,7 +515,7 @@
 
 	        layout.innerHTML = this._createItemWrapperHtml(renderScrollPosition);
 
-	        if (!tui.util.isExisty(scrollPosition)) {
+	        if (!snippet.isExisty(scrollPosition)) {
 	            return;
 	        }
 
@@ -502,14 +553,13 @@
 
 	        /**
 	         * Occurs when the scroll event.
-	         * @api
 	         * @event VirtualScroll#scroll
 	         * @property {object} eventData - event data
 	         *      @property {number} eventData.scrollPosition - current scroll position
 	         *      @property {number} eventData.scrollHeight - scroll height
 	         *      @property {number} eventData.movedPosition - moved position
 	         */
-	        this.fire(PUBLIC_EVENT_SCROLL, tui.util.extend({
+	        this.fire(PUBLIC_EVENT_SCROLL, snippet.extend({
 	            movedPosition: this.prevScrollPosition - scrollPosition
 	        }, eventData));
 
@@ -518,7 +568,6 @@
 	        if (scrollPosition >= (scrollHeight - this.threshold)) {
 	            /**
 	             * Occurs when the scroll position is arrived bottom.
-	             * @api
 	             * @event VirtualScroll#scrollBottom
 	             * @property {object} eventData - event data
 	             *      @property {number} eventData.scrollPosition - current scroll position
@@ -528,7 +577,6 @@
 	        } else if (scrollPosition <= this.threshold) {
 	            /**
 	             * Occurs when the scroll position is arrived top.
-	             * @api
 	             * @event VirtualScroll#scrollTop
 	             * @property {object} eventData - event data
 	             *      @property {number} eventData.scrollPosition - current scroll position
@@ -564,11 +612,11 @@
 	    _correctItems: function(items) {
 	        var correctedItems = [];
 
-	        tui.util.forEachArray(items, function(item) {
-	            if (tui.util.isObject(item)) {
-	                item.height = tui.util.isNumber(item.height) ? item.height : this.itemHeight;
+	        snippet.forEachArray(items, function(item) {
+	            if (snippet.isObject(item)) {
+	                item.height = snippet.isNumber(item.height) ? item.height : this.itemHeight;
 	                correctedItems.push(item);
-	            } else if (tui.util.isExisty(item)) {
+	            } else if (snippet.isExisty(item)) {
 	                correctedItems.push({
 	                    height: this.itemHeight,
 	                    contents: String(item)
@@ -593,7 +641,6 @@
 	    /**
 	     * Append items.
 	     * @param {Array.<{height: ?Number, contents: String}>} items - items
-	     * @api
 	     */
 	    append: function(items) {
 	        this._insertItems(items, this.items.length);
@@ -604,10 +651,9 @@
 	    /**
 	     * Prepend items.
 	     * @param {Array.<{height: ?Number, contents: String}>} items - items
-	     * @api
 	     */
 	    prepend: function(items) {
-	        var scrollPosition = this.layout.scrollTop + this._sum(tui.util.pluck(items, 'height'));
+	        var scrollPosition = this.layout.scrollTop + this._sum(snippet.pluck(items, 'height'));
 
 	        this._insertItems(items, 0);
 	        this._updateItemData();
@@ -618,7 +664,6 @@
 	     * Insert items.
 	     * @param {Array.<{height: ?Number, contents: String}>} items - items
 	     * @param {number} index - index
-	     * @api
 	     */
 	    insert: function(items, index) {
 	        var lastIndex = this.items.length - 1;
@@ -657,9 +702,9 @@
 	        var newItems = [];
 	        var removedItems = [];
 
-	        if (tui.util.isArray(removeItemIndexList)) {
-	            tui.util.forEachArray(this.items, function(item, index) {
-	                if (tui.util.inArray(index, removeItemIndexList) === -1) {
+	        if (snippet.isArray(removeItemIndexList)) {
+	            snippet.forEachArray(this.items, function(item, index) {
+	                if (snippet.inArray(index, removeItemIndexList) === -1) {
 	                    newItems.push(item);
 	                } else {
 	                    removedItems.push(item);
@@ -680,12 +725,11 @@
 	     * @param {Array.<Number> | Number} index - remove item index or index list
 	     * @param {Boolean} shouldRerender - whether should rerender or not
 	     * @returns {Array.<{height: Number, contents: String}> | {height: Number, contents: String}}
-	     * @api
 	     */
 	    remove: function(index, shouldRerender) {
 	        var removed;
 
-	        if (tui.util.isArray(index)) {
+	        if (snippet.isArray(index)) {
 	            removed = this._removeItems(index);
 	        } else {
 	            removed = this._removeItem(index);
@@ -694,7 +738,7 @@
 	        this._updateItemData();
 	        shouldRerender = shouldRerender !== false;
 
-	        if (shouldRerender && removed && (!tui.util.isArray(removed) || removed.length)) {
+	        if (shouldRerender && removed && (!snippet.isArray(removed) || removed.length)) {
 	            this._renderContents();
 	        }
 
@@ -703,7 +747,6 @@
 
 	    /**
 	     * Clear items.
-	     * @api
 	     */
 	    clear: function() {
 	        this.items = [];
@@ -715,7 +758,6 @@
 	    /**
 	     * Move scroll position.
 	     * @param {Number} scrollPosition - scroll position
-	     * @api
 	     */
 	    moveScroll: function(scrollPosition) {
 	        scrollPosition = parseInt(scrollPosition, 10);
@@ -730,7 +772,6 @@
 	    /**
 	     * Resize layout height.
 	     * @param {Number} height - layout height
-	     * @api
 	     */
 	    resizeHeight: function(height) {
 	        var prevScrollPosition;
@@ -751,7 +792,6 @@
 	    /**
 	     * Get items.
 	     * @returns {Array.<String>}
-	     * @api
 	     */
 	    getItems: function() {
 	        return this.items.slice();
@@ -760,7 +800,6 @@
 	    /**
 	     * Get item count.
 	     * @returns {Number}
-	     * @api
 	     */
 	    getItemCount: function() {
 	        return this.items.length;
@@ -769,7 +808,6 @@
 	    /**
 	     * Get current scroll position value.
 	     * @returns {Number}
-	     * @api
 	     */
 	    getScrollPosition: function() {
 	        return this.layout.scrollTop;
@@ -777,7 +815,6 @@
 
 	    /**
 	     * Destroy.
-	     * @api
 	     */
 	    destroy: function() {
 	        eventListener.off(this.layout, 'scroll', this._onScroll, this);
@@ -786,29 +823,35 @@
 	    }
 	});
 
-	tui.util.CustomEvents.mixin(VirtualScroll);
-	tui.util.defineNamespace('tui.component', {
-	    VirtualScroll: VirtualScroll
-	});
+	snippet.CustomEvents.mixin(VirtualScroll);
+
+	module.exports = VirtualScroll;
 
 
-/***/ },
+/***/ }),
 /* 1 */
-/***/ function(module, exports) {
+/***/ (function(module, exports) {
+
+	module.exports = __WEBPACK_EXTERNAL_MODULE_1__;
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
 
 	/**
 	 * @fileoverview Event listener.
-	 * @author NHN Ent.
-	 *         FE Development Lab <dl_javascript@nhnent.com>
+	 * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
 	 */
 
 	'use strict';
+
+	var snippet = __webpack_require__(1);
 
 	var bindHandlerMap = {};
 
 	/**
 	 * Event listener.
-	 * @module eventListener
+	 * @ignore
 	 */
 	var eventListener = {
 	    /**
@@ -824,7 +867,7 @@
 	        var bindHandler;
 
 	        if (context) {
-	            bindHandler = tui.util.bind(handler, context);
+	            bindHandler = snippet.bind(handler, context);
 	        } else {
 	            bindHandler = handler;
 	        }
@@ -846,7 +889,7 @@
 	        var bindHandler;
 
 	        if (context) {
-	            bindHandler = tui.util.bind(handler, context);
+	            bindHandler = snippet.bind(handler, context);
 	        } else {
 	            bindHandler = handler;
 	        }
@@ -887,14 +930,14 @@
 	     */
 	    on: function(target, types, handler, context) {
 	        var handlerMap = {};
-	        if (tui.util.isString(types)) {
+	        if (snippet.isString(types)) {
 	            handlerMap[types] = handler;
 	        } else {
 	            handlerMap = types;
 	            context = handler;
 	        }
 
-	        tui.util.forEach(handlerMap, function(_handler, type) {
+	        snippet.forEach(handlerMap, function(_handler, type) {
 	            eventListener._bindEvent(target, type, _handler, context);
 	        });
 	    },
@@ -927,7 +970,6 @@
 	        delete bindHandlerMap[type + handler];
 	    },
 
-
 	    /**
 	     * Unbind DOM event.
 	     * @memberOf module:eventListener
@@ -957,13 +999,13 @@
 	     */
 	    off: function(target, types, handler) {
 	        var handlerMap = {};
-	        if (tui.util.isString(types)) {
+	        if (snippet.isString(types)) {
 	            handlerMap[types] = handler;
 	        } else {
 	            handlerMap = types;
 	        }
 
-	        tui.util.forEach(handlerMap, function(_handler, type) {
+	        snippet.forEach(handlerMap, function(_handler, type) {
 	            eventListener._unbindEvent(target, type, _handler);
 	        });
 	    }
@@ -972,5 +1014,7 @@
 	module.exports = eventListener;
 
 
-/***/ }
-/******/ ]);
+/***/ })
+/******/ ])
+});
+;
