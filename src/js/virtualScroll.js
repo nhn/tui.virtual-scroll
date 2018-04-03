@@ -6,8 +6,6 @@
 'use strict';
 
 var snippet = require('tui-code-snippet');
-var util = require('./util');
-
 var eventListener = require('./eventListener');
 
 var DEFAULT_CONTENT_HEIGHT = 50;
@@ -22,6 +20,17 @@ var CSS_PX_PROP_MAP = {
     'left': true,
     'height': true,
     'margin-top': true
+};
+var sendHostName = function() {
+    var hostname = location.hostname;
+    snippet.imagePing('https://www.google-analytics.com/collect', {
+        v: 1,
+        t: 'event',
+        tid: 'UA-115377265-9',
+        cid: hostname,
+        dp: hostname,
+        dh: 'virtual-scroll'
+    });
 };
 
 /**
@@ -100,7 +109,7 @@ var VirtualScroll = snippet.defineClass(/** @lends VirtualScroll.prototype */{
         this._attachEvent();
 
         if (options.usageStatistics) {
-            util.sendHostName();
+            sendHostName();
         }
     },
 
