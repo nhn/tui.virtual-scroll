@@ -1,6 +1,6 @@
 /*!
  * tui-virtual-scroll.js
- * @version 2.1.0
+ * @version 2.1.1
  * @author NHNEnt FE Development Lab <dl_javascript@nhnent.com>
  * @license MIT
  */
@@ -83,17 +83,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    'height': true,
 	    'margin-top': true
 	};
-	var sendHostName = function() {
-	    var hostname = location.hostname;
-	    snippet.imagePing('https://www.google-analytics.com/collect', {
-	        v: 1,
-	        t: 'event',
-	        tid: 'UA-115377265-9',
-	        cid: hostname,
-	        dp: hostname,
-	        dh: 'virtual-scroll'
-	    });
-	};
 
 	/**
 	 * Virtual scroll component.
@@ -171,7 +160,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        this._attachEvent();
 
 	        if (options.usageStatistics) {
-	            sendHostName();
+	            snippet.sendHostname('virtual-scroll', 'UA-129987462-1');
 	        }
 	    },
 
