@@ -914,19 +914,19 @@ describe('tui.component.VirtualScroll', function() {
     describe('usageStatistics', function() {
         beforeEach(function() {
             this.virtualScroll = null;
-            spyOn(snippet, 'imagePing');
+            spyOn(snippet, 'sendHostname');
         });
 
         it('should send hostname by default', function() {
             this.virtualScroll = new VirtualScroll(document.createElement('div'));
 
-            expect(snippet.imagePing).toHaveBeenCalled();
+            expect(snippet.sendHostname).toHaveBeenCalled();
         });
 
         it('should not send hostname on usageStatistics option false', function() {
             this.virtualScroll = new VirtualScroll(document.createElement('div'), {usageStatistics: false});
 
-            expect(snippet.imagePing).not.toHaveBeenCalled();
+            expect(snippet.sendHostname).not.toHaveBeenCalled();
         });
     });
 });
