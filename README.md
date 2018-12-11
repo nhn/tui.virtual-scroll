@@ -39,7 +39,7 @@ var options = {
     ...
     usageStatistics: false
 }
-var instance = new VirtualScroll(options);
+var instance = new VirtualScroll(container, options);
 ```
 
 ## 🌏 Browser Support
