@@ -4,7 +4,7 @@
       "src": "https://uicdn.toast.com/toastui/img/tui-component-bi-white.png"
     },
     "title": {
-      "text": "Virtual Scrolling",
+      "text": "Virtual Scroll",
       "linkUrl": "https://github.com/nhnent/tui.virtual-scroll"
     }
   },
@@ -30,5 +30,5 @@
       "example01-basic": "1. Basic"
     }
   },
-  "pathPrefix": "tui.virtual-scrolling"
+  "pathPrefix": "tui.virtual-scroll"
 }
