@@ -39,7 +39,7 @@ var options = {
     ...
     usageStatistics: false
 }
-var instance = new VirtualScroll(options);
+var instance = new VirtualScroll(container, options);
 ```
 
 ## 🌏 Browser Support
@@ -55,7 +55,7 @@ var instance = new VirtualScroll(options);
 
 
 ## 🐾 Examples
-* [Basic](https://nhnent.github.io/tui.virtual-scroll/latest/tutorial-example01-basic.html) : Example of using default options.
+* [Basic](https://nhnent.github.io/tui.virtual-scroll/latest/tutorial-example01-basic) : Example of using default options.
 
 
 ## 💾 Install
@@ -83,7 +83,7 @@ $ bower install tui-virtual-scroll # Latest version
 $ bower install tui-virtual-scroll#<tag> # Specific version
 ```
 
-### Via Contents Delivery Network (CDN) 
+### Via Contents Delivery Network (CDN)
 
 TOAST UI products are available over a CDN powered by [TOAST Cloud](https://www.toast.com)
 
@@ -139,10 +139,10 @@ var VirtualScroll = require('tui-virtual-scroll'); /* CommonJS */
 ```
 
 ``` javascript
-import {VirtualScroll} from 'tui-virtual-scoll'; /* ES6 */
+import VirtualScroll from 'tui-virtual-scoll'; /* ES6 */
 ```
 
-You can create an instance with [options](https://nhnent.github.io/tui.virtual-scroll/latest/VirtualScroll.html) and call various APIs after creating an instance.
+You can create an instance with [options](https://nhnent.github.io/tui.virtual-scroll/latest/VirtualScroll) and call various APIs after creating an instance.
 
 ``` javascript
 var container = document.getElementById('tui-virtual-scroll-container');
@@ -151,7 +151,7 @@ var instance = new VirtualScroll(container, { ... });
 instance.getItems();
 ```
 
-For more information about the API, please see [here](https://nhnent.github.io/tui.virtual-scroll/latest/VirtualScroll.html).
+For more information about the API, please see [here](https://nhnent.github.io/tui.virtual-scroll/latest/VirtualScroll).
 
 
 ## 🔧 Pull Request Steps
