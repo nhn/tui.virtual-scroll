@@ -1,7 +1,7 @@
 /*!
  * tui-virtual-scroll.js
- * @version 2.1.2
- * @author NHNEnt FE Development Lab <dl_javascript@nhnent.com>
+ * @version 2.1.3
+ * @author NHN FE Development Lab <dl_javascript@nhn.com>
  * @license MIT
  */
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -62,7 +62,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * @fileoverview Virtual scroll component.
-	 * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
+	 * @author NHN. FE Development Lab <dl_javascript@nhn.com>
 	 */
 
 	'use strict';
@@ -829,7 +829,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	/**
 	 * @fileoverview Event listener.
-	 * @author NHN Ent. FE Development Lab <dl_javascript@nhnent.com>
+	 * @author NHN. FE Development Lab <dl_javascript@nhn.com>
 	 */
 
 	'use strict';
