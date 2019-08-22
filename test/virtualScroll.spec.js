@@ -3,7 +3,7 @@
 var snippet = require('tui-code-snippet');
 var VirtualScroll = require('../src/js/virtualScroll');
 
-describe('tui.component.VirtualScroll', function() {
+describe('tui.VirtualScroll', function() {
     var virtualScroll;
 
     beforeEach(function() {
