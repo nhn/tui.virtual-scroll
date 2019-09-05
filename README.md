@@ -1,3 +1,5 @@
+#### ‼️ There are no major updates planned for `tui.virtual-scroll` in the future. It will only get bug fixes.
+
 # TOAST UI Component : Virtual Scroll
 > Component that renders only visible items according to the scroll position when there are too many items to render.
 
